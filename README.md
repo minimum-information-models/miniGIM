@@ -1,2 +1,2 @@
 # miniGIM
-Minimaal Gebied Informatie Methodiek
+Minimaal Gebied Informatie Modules
