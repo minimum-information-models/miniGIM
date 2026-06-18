@@ -1,0 +1,5 @@
+<!DOCTYPE connections>
+<qgsWCSConnections version="1.0">
+    <wcs username="" url="https://service.pdok.nl/rws/ahn/wcs/v1_0" password="" name="AHN"/>
+    <wcs username="" url="https://data.rivm.nl/geo/alo/ows?layer=rivm_20210201_g_geluidkaart_lden_alle_bronnen_v3" password="" name="RIVM"/>
+</qgsWCSConnections>

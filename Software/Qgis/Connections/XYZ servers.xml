@@ -1,0 +1,9 @@
+<!DOCTYPE connections>
+<qgsXYZTilesConnections version="1.0">
+    <xyztiles zmax="18" zmin="0" authcfg="" http-header:referer="" url="https://api.pdok.nl/lv/bgt/ogc/v0_1" name="BGT" username="" referer="" tilePixelRatio="0" password=""/>
+    <xyztiles zmax="18" zmin="0" authcfg="" http-header:referer="" url="http://mt0.google.com/vt/lyrs=s&amp;hl=en&amp;x={x}&amp;y={y}&amp;z={z}" name="Google luchtfoto" username="" referer="" tilePixelRatio="0" password=""/>
+    <xyztiles zmax="15" zmin="0" authcfg="" url="https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png" name="Mapzen Global Terrain" username="" tilePixelRatio="0" password=""/>
+    <xyztiles zmax="19" zmin="0" authcfg="" url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" name="OpenStreetMap" username="" tilePixelRatio="0" password=""/>
+    <xyztiles zmax="18" zmin="0" authcfg="" http-header:referer="" url="&#x9;https://tile.openstreetmap.org/${z}/${x}/${y}.png" name="OpenStreetMap_labels" username="" referer="" tilePixelRatio="0" password=""/>
+    <xyztiles zmax="18" zmin="0" authcfg="" http-header:referer="" url="https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png" name="OpenStreetMap_nolabels" username="" referer="" tilePixelRatio="0" password=""/>
+</qgsXYZTilesConnections>
