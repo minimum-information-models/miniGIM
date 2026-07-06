@@ -1,2 +1,10 @@
 # QGIS/GDAL generated schema files
 *.gfs
+
+*.DS_Store
+*.vscode
+*.dot
+
+*.js
+*.exe
+temp
