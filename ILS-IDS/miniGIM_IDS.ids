@@ -1,0 +1,243 @@
+<ids:ids xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://standards.buildingsmart.org/IDS http://standards.buildingsmart.org/IDS/1.0/ids.xsd" xmlns:ids="http://standards.buildingsmart.org/IDS">
+  <!--Edited with usBIM.IDSeditor 2.4.8 (http://www.accasoftware.com)-->
+  <ids:info>
+    <ids:title>MiniGIM IDS</ids:title>
+    <ids:copyright>miniGIM consortium</ids:copyright>
+    <ids:version>0.9.4</ids:version>
+    <ids:description>Input GREX
+</ids:description>
+    <ids:author>vragen@minigim.nl</ids:author>
+    <ids:date>2026-07-10</ids:date>
+    <ids:purpose>Niveau 3 (ook te gebruiken op lagere niveaus)</ids:purpose>
+    <ids:milestone>GREX</ids:milestone>
+  </ids:info>
+  <ids:specifications>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="IfcSite">
+      <ids:applicability minOccurs="1" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCSITE</ids:simpleValue>
+          </ids:name>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements />
+    </ids:specification>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="ProjectedCRS">
+      <ids:applicability minOccurs="1" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCPROJECTEDCRS</ids:simpleValue>
+          </ids:name>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements>
+        <ids:attribute cardinality="required" instructions="Gebruik het Amersfoort RD New stelsel.">
+          <ids:name>
+            <ids:simpleValue>Name</ids:simpleValue>
+          </ids:name>
+          <ids:value>
+            <ids:simpleValue>EPSG:28992</ids:simpleValue>
+          </ids:value>
+        </ids:attribute>
+      </ids:requirements>
+    </ids:specification>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="Map conversion">
+      <ids:applicability minOccurs="1" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCMAPCONVERSION</ids:simpleValue>
+          </ids:name>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements>
+        <ids:attribute cardinality="required">
+          <ids:name>
+            <ids:simpleValue>Eastings</ids:simpleValue>
+          </ids:name>
+        </ids:attribute>
+        <ids:attribute cardinality="required">
+          <ids:name>
+            <ids:simpleValue>Northings</ids:simpleValue>
+          </ids:name>
+        </ids:attribute>
+      </ids:requirements>
+    </ids:specification>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="Uitgeefbare ruimte">
+      <ids:applicability minOccurs="1" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCSPACE</ids:simpleValue>
+          </ids:name>
+          <ids:predefinedType>
+            <ids:simpleValue>USERDEFINED</ids:simpleValue>
+          </ids:predefinedType>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements>
+        <ids:attribute cardinality="required" instructions="bijvoorbeeld: Woning, Tussenwoning, Parkeerplaats, Rijbaan parkeren, voetpad, Rijbaan, etc.">
+          <ids:name>
+            <ids:simpleValue>ObjectType</ids:simpleValue>
+          </ids:name>
+        </ids:attribute>
+        <ids:property dataType="IFCTEXT" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>Afnemer</ids:simpleValue>
+          </ids:baseName>
+          <ids:value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Particulier" />
+              <xs:enumeration value="Corporatie" />
+              <xs:enumeration value="Gemeenschappelijk" />
+              <xs:enumeration value="Belegger" />
+              <xs:enumeration value="Gemeente" />
+            </xs:restriction>
+          </ids:value>
+        </ids:property>
+        <ids:property dataType="IFCTEXT" cardinality="optional" instructions="Bijvoorbeeld: BI, of NVO">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>Bepalingsmethode</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCTEXT" cardinality="optional" instructions="Bijvoorbeeld: SSH">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>Segment</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCAREAMEASURE" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>Qto_SpaceBaseQuantities</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>GrossCeilingArea</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCAREAMEASURE" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>Qto_SpaceBaseQuantities</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>GrossFloorArea</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCVOLUMEMEASURE" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>Qto_SpaceBaseQuantities</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>GrossVolume</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCVOLUMEMEASURE" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>Qto_SpaceBaseQuantities</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>NetVolume</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+        <ids:property dataType="IFCTEXT" cardinality="optional" instructions="BouwwerkType, TereinType, of BuitenRuimteType.&#xA;Bijvoorbeeld: parkeerplaats auto, Woning, etc.">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <xs:restriction base="xs:string">
+              <xs:pattern value=".*Type" />
+            </xs:restriction>
+          </ids:baseName>
+        </ids:property>
+      </ids:requirements>
+    </ids:specification>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="Niet uitgeefbare informatie." instructions="Dit zijn 'geographical elements' zoals bomen en bloembakken.">
+      <ids:applicability minOccurs="0" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCGEOGRAPHICELEMENT</ids:simpleValue>
+          </ids:name>
+          <ids:predefinedType>
+            <ids:simpleValue>USERDEFINED</ids:simpleValue>
+          </ids:predefinedType>
+        </ids:entity>
+      </ids:applicability>
+      <ids:requirements>
+        <ids:attribute cardinality="required" instructions="Bijvoorbeeld: boom...">
+          <ids:name>
+            <ids:simpleValue>ObjectType</ids:simpleValue>
+          </ids:name>
+        </ids:attribute>
+      </ids:requirements>
+    </ids:specification>
+    <ids:specification ifcVersion="IFC4 IFC4X3_ADD2" name="Woning specifieke uitgeefbare ruimte">
+      <ids:applicability minOccurs="1" maxOccurs="unbounded">
+        <ids:entity>
+          <ids:name>
+            <ids:simpleValue>IFCSPACE</ids:simpleValue>
+          </ids:name>
+          <ids:predefinedType>
+            <ids:simpleValue>USERDEFINED</ids:simpleValue>
+          </ids:predefinedType>
+        </ids:entity>
+        <ids:attribute>
+          <ids:name>
+            <ids:simpleValue>ObjectType</ids:simpleValue>
+          </ids:name>
+          <ids:value>
+            <ids:simpleValue>Woning</ids:simpleValue>
+          </ids:value>
+        </ids:attribute>
+      </ids:applicability>
+      <ids:requirements>
+        <ids:property dataType="IFCTEXT" cardinality="required" instructions="Omdat het een woning betreft kan de afnemer slecht een van deze 3 opties zijn: Particulier, Corporatie, Belegger.">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>Afnemer</ids:simpleValue>
+          </ids:baseName>
+          <ids:value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Particulier" />
+              <xs:enumeration value="Corporatie" />
+              <xs:enumeration value="Belegger" />
+            </xs:restriction>
+          </ids:value>
+        </ids:property>
+        <ids:property dataType="IFCTEXT" cardinality="required">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>Segment</ids:simpleValue>
+          </ids:baseName>
+          <ids:value>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="SSH" />
+              <xs:enumeration value="MSH" />
+              <xs:enumeration value="VSK" />
+              <xs:enumeration value="SSK" />
+              <xs:enumeration value="MSK" />
+              <xs:enumeration value="SHZ" />
+              <xs:enumeration value="ZHV" />
+            </xs:restriction>
+          </ids:value>
+        </ids:property>
+        <ids:property dataType="IFCTEXT" cardinality="optional">
+          <ids:propertySet>
+            <ids:simpleValue>MiniGIM_ILS</ids:simpleValue>
+          </ids:propertySet>
+          <ids:baseName>
+            <ids:simpleValue>BouwwerkType</ids:simpleValue>
+          </ids:baseName>
+        </ids:property>
+      </ids:requirements>
+    </ids:specification>
+  </ids:specifications>
+</ids:ids>
