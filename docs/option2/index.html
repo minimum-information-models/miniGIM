@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omgevingsanalyselijst — miniGIM</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1c2430;
+    --muted: #64748b;
+    --accent: #0f6bd7;
+    --accent-soft: #e8f1fc;
+    --border: #e2e8f0;
+    --hl: #fff3bf;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 28px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { margin: 0 0 2px; font-size: 22px; }
+  header p.sub { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  header p.sub a { color: var(--accent); text-decoration: none; }
+  header p.sub a:hover { text-decoration: underline; }
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  #search {
+    flex: 1 1 320px;
+    max-width: 480px;
+    padding: 9px 14px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+  }
+  #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  #count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+  /* active-filter bar */
+  #filterbar {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--accent-soft);
+    border: 1px solid #bcd8f7;
+    border-radius: 10px;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  #filterbar.on { display: flex; }
+  #filterbar .lbl { font-size: 13px; font-weight: 600; color: #0b4f9e; margin-right: 2px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .chip:hover { background: #fdecec; border-color: #b42318; color: #b42318; }
+  .chip .x { font-weight: 700; }
+  .chip .k { color: var(--muted); font-weight: 400; }
+  #resetFilters {
+    margin-left: auto;
+    border: none;
+    background: #b42318;
+    color: #fff;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #resetFilters:hover { background: #8f1c13; }
+
+  main { padding: 20px 28px 60px; max-width: 1600px; margin: 0 auto; }
+  #status { color: var(--muted); padding: 40px 0; text-align: center; }
+  #status.error { color: #b42318; }
+  section.module {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 0 0 22px;
+    overflow: hidden;
+  }
+  section.module h2 {
+    margin: 0;
+    padding: 13px 18px;
+    font-size: 16px;
+    background: var(--accent-soft);
+    color: #0b4f9e;
+    border-bottom: 1px solid var(--border);
+  }
+  section.module h2 .n { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 1300px; table-layout: fixed; }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    overflow-wrap: break-word;
+  }
+  th {
+    background: #fafbfc;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fbfcfe; }
+  td:first-child { font-weight: 600; }
+  td a { color: var(--accent); }
+  mark { background: var(--hl); padding: 0 1px; border-radius: 2px; }
+
+  /* tags */
+  .tag {
+    display: inline-block;
+    margin: 1px 4px 3px 0;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 12.5px;
+    font-family: inherit;
+    cursor: pointer;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    text-align: left;
+  }
+  .tag:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .tag.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .tag.risk-hoog   { background: #fdecec; border-color: #f0b4ae; color: #b42318; }
+  .tag.risk-midden { background: #fff4e0; border-color: #f2cf87; color: #93590a; }
+  .tag.risk-laag   { background: #e7f6ec; border-color: #a9dcbb; color: #17743a; }
+  .tag.risk-hoog.active   { background: #b42318; border-color: #b42318; color: #fff; }
+  .tag.risk-midden.active { background: #b97708; border-color: #b97708; color: #fff; }
+  .tag.risk-laag.active   { background: #17743a; border-color: #17743a; color: #fff; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 28px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Omgevingsanalyselijst</h1>
+  <p class="sub">miniGIM — live geladen uit de
+    <a href="https://github.com/minimum-information-models/miniGIM/blob/main/Omgevingsanalyselijst/omgevingsanalyselijst.md" target="_blank" rel="noopener">GitHub-repository</a>.
+    Typ om te zoeken, of klik op een tag (Relevantie, Risico, Informatie governer, Ontsluiter) om te filteren.</p>
+  <div class="controls">
+    <input id="search" type="search" placeholder="Zoek in alle rijen… (bijv. water, kadaster, PDOK)" autocomplete="off">
+    <span id="count"></span>
+  </div>
+  <div id="filterbar">
+    <span class="lbl">Actieve filters:</span>
+    <span id="chips"></span>
+    <button id="resetFilters" type="button">✕ Reset filters</button>
+  </div>
+</header>
+<main>
+  <div id="status">Gegevens laden…</div>
+  <div id="content"></div>
+</main>
+<footer>Bron: minimum-information-models/miniGIM · kolom “MiniSIM/BIM relatie” is weggelaten</footer>
+
+<script>
+const SOURCE = 'https://raw.githubusercontent.com/minimum-information-models/miniGIM/main/Omgevingsanalyselijst/omgevingsanalyselijst.md';
+const REMOVE_COL = /minisim\s*\/?\s*bim/i;
+const TAG_COLS = [/^relevantie$/i, /^risico$/i, /^informatie governer$/i, /^ontsluiter$/i];
+
+// ---- markdown table parsing ----
+function splitRow(line) {
+  const cells = [];
+  let cur = '';
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '\\' && line[i + 1] === '|') { cur += '|'; i++; }
+    else if (ch === '|') { cells.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  cells.push(cur);
+  if (cells.length && cells[0].trim() === '') cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+  return cells.map(c => c.trim());
+}
+
+function parseMarkdown(md) {
+  const lines = md.split(/\r?\n/).filter(l => l.trim().startsWith('|'));
+  if (lines.length < 2) throw new Error('Geen tabel gevonden in het markdown-bestand.');
+  let headers = splitRow(lines[0]).map(h => h.replace(/^_+|_+$/g, '').trim());
+  while (headers.length && headers[headers.length - 1] === '') headers.pop(); // drop nameless trailing columns
+  const seen = {};
+  headers = headers.map(h => {
+    seen[h] = (seen[h] || 0) + 1;
+    return seen[h] > 1 ? h + ' (' + seen[h] + ')' : h;
+  });
+  const rawWidth = headers.length;
+  const removeIdx = headers.findIndex(h => REMOVE_COL.test(h));
+  if (removeIdx !== -1) headers.splice(removeIdx, 1);
+
+  const modules = [];
+  let current = null;
+  for (let i = 1; i < lines.length; i++) {
+    const raw = lines[i];
+    if (/^\|[\s|:-]*$/.test(raw)) continue;
+    let cells = splitRow(raw);
+    if (cells.every(c => c === '')) continue;
+    const mod = cells[0].match(/^\*\*\s*Module\s*:?\s*(.+?)\s*\*\*$/i);
+    if (mod) { current = { name: mod[1], rows: [] }; modules.push(current); continue; }
+    while (cells.length < rawWidth) cells.push('');
+    cells = cells.slice(0, rawWidth);
+    if (removeIdx !== -1) cells.splice(removeIdx, 1);
+    if (!current) { current = { name: 'Algemeen', rows: [] }; modules.push(current); }
+    current.rows.push(cells);
+  }
+  return { headers, modules };
+}
+
+// ---- inline markdown -> safe HTML ----
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function inlineMd(s) {
+  let h = esc(s);
+  h = h.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+  h = h.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/(^|\s)_([^_]+)_(?=\s|[.,;:!?)]|$)/g, '$1<em>$2</em>');
+  h = h.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, function(m, pre, url) {
+    return pre + '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+  });
+  return h;
+}
+function highlight(html, q) {
+  if (!q) return html;
+  const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(' + safe + ')(?![^<]*>)', 'gi');
+  return html.replace(re, '<mark>$1</mark>');
+}
+
+// ---- tags & filters ----
+let DATA = null;
+let tagCols = [];                       // column indexes that behave as tag columns
+const filters = new Map();              // colIndex -> Set of lowercase tag values
+const $ = id => document.getElementById(id);
+
+function cellTags(cell) {
+  // one tag per value; values separated by comma, <br> or '/'
+  // (e.g. 'Ontwerp/Financieel' -> 'Ontwerp' + 'Financieel')
+  const parts = [];
+  cell.split(/,|<br\s*\/?>/i).forEach(p => {
+    if (/https?:\/\//i.test(p)) { parts.push(p); return; } // don't break URLs apart
+    p.split('/').forEach(x => parts.push(x));
+  });
+  const tags = parts
+    .map(t => t.trim()
+      .replace(/^(en|of)\s+/i, '')   // strip 'en/of' connector fragments
+      .replace(/\s+(en|of)$/i, '')
+      .trim())
+    .filter(Boolean);
+  return [...new Set(tags)];
+}
+function riskClass(colIdx, val) {
+  if (!/^risico$/i.test(DATA.headers[colIdx])) return '';
+  const s = val.toLowerCase();
+  if (s.startsWith('hoog')) return ' risk-hoog';
+  if (s.startsWith('midden') || s.startsWith('middel')) return ' risk-midden';
+  if (s.startsWith('laag')) return ' risk-laag';
+  return '';
+}
+function rowMatchesFilters(cells) {
+  for (const [col, vals] of filters) {
+    const tags = cellTags(cells[col] || '').map(t => t.toLowerCase());
+    let ok = false;
+    for (const v of vals) if (tags.includes(v)) { ok = true; break; }
+    if (!ok) return false;
+  }
+  return true;
+}
+
+// One shared set of column widths (%) so every module table lines up identically.
+const WIDTH_MAP = [
+  { re: /^onderdeel$/i,            w: 15 },
+  { re: /^toelichting$/i,          w: 22 },
+  { re: /^relevantie$/i,           w: 8  },
+  { re: /^risico$/i,               w: 9  },
+  { re: /^databron/i,              w: 12 },
+  { re: /^toelichting \(2\)$/i,    w: 16 },
+  { re: /^informatie governer$/i,  w: 9  },
+  { re: /^ontsluiter$/i,           w: 9  }
+];
+function colgroup() {
+  let widths = DATA.headers.map(h => {
+    const m = WIDTH_MAP.find(x => x.re.test(h));
+    return m ? m.w : 0;
+  });
+  const assigned = widths.reduce((a, b) => a + b, 0);
+  const missing = widths.filter(w => !w).length;
+  if (missing) {
+    const each = Math.max(5, (100 - assigned) / missing);
+    widths = widths.map(w => w || each);
+  }
+  const total = widths.reduce((a, b) => a + b, 0);
+  return '<colgroup>' + widths.map(w =>
+    '<col style="width:' + (w / total * 100).toFixed(2) + '%">'
+  ).join('') + '</colgroup>';
+}
+
+// ---- rendering ----
+function renderCell(cell, colIdx, q) {
+  if (!tagCols.includes(colIdx)) return highlight(inlineMd(cell), q);
+  return cellTags(cell).map(t => {
+    const active = filters.has(colIdx) && filters.get(colIdx).has(t.toLowerCase());
+    return '<button type="button" class="tag' + riskClass(colIdx, t) + (active ? ' active' : '') +
+      '" data-col="' + colIdx + '" data-val="' + esc(t) + '">' + highlight(esc(t), q) + '</button>';
+  }).join(' ');
+}
+
+function renderFilterBar() {
+  const bar = $('filterbar');
+  if (!filters.size) { bar.classList.remove('on'); return; }
+  bar.classList.add('on');
+  const chips = [];
+  for (const [col, vals] of filters) {
+    for (const v of vals) {
+      chips.push('<span class="chip" data-col="' + col + '" data-val="' + esc(v) + '" title="Filter verwijderen">' +
+        '<span class="k">' + esc(DATA.headers[col]) + ':</span> ' + esc(v) + ' <span class="x">×</span></span>');
+    }
+  }
+  $('chips').innerHTML = chips.join(' ');
+}
+
+function render() {
+  const q = $('search').value.trim().toLowerCase();
+  const root = $('content');
+  root.innerHTML = '';
+  let shown = 0, total = 0;
+
+  DATA.modules.forEach(mod => {
+    total += mod.rows.length;
+    const rows = mod.rows.filter(r =>
+      (!q || r.some(c => c.toLowerCase().includes(q))) && rowMatchesFilters(r)
+    );
+    shown += rows.length;
+    if (!rows.length) return;
+
+    const sec = document.createElement('section');
+    sec.className = 'module';
+    const ths = DATA.headers.map(h => '<th>' + esc(h) + '</th>').join('');
+    const trs = rows.map(r =>
+      '<tr>' + r.map((c, i) => '<td>' + renderCell(c, i, q) + '</td>').join('') + '</tr>'
+    ).join('');
+    sec.innerHTML =
+      '<h2>' + esc(mod.name) + '<span class="n">' + rows.length + ' item' + (rows.length === 1 ? '' : 's') + '</span></h2>' +
+      '<div class="tbl-wrap"><table>' + colgroup() + '<thead><tr>' + ths + '</tr></thead><tbody>' + trs + '</tbody></table></div>';
+    root.appendChild(sec);
+  });
+
+  const filtered = q || filters.size;
+  $('count').textContent = filtered ? shown + ' van ' + total + ' items' : total + ' items';
+  renderFilterBar();
+  if (!root.children.length) {
+    root.innerHTML = '<div id="status">Geen resultaten voor de huidige zoekopdracht/filters.</div>';
+  }
+}
+
+function toggleFilter(col, val) {
+  const v = val.toLowerCase();
+  if (!filters.has(col)) filters.set(col, new Set());
+  const set = filters.get(col);
+  if (set.has(v)) { set.delete(v); if (!set.size) filters.delete(col); }
+  else set.add(v);
+  render();
+}
+
+document.addEventListener('click', e => {
+  const tag = e.target.closest('.tag');
+  if (tag) { toggleFilter(+tag.dataset.col, tag.dataset.val); return; }
+  const chip = e.target.closest('.chip');
+  if (chip) { toggleFilter(+chip.dataset.col, chip.dataset.val); return; }
+});
+$('resetFilters').addEventListener('click', () => { filters.clear(); render(); });
+$('search').addEventListener('input', render);
+
+fetch(SOURCE)
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+  .then(md => {
+    DATA = parseMarkdown(md);
+    tagCols = DATA.headers.map((h, i) => TAG_COLS.some(re => re.test(h)) ? i : -1).filter(i => i !== -1);
+    $('status').remove();
+    render();
+  })
+  .catch(err => {
+    const s = $('status');
+    s.className = 'error';
+    s.innerHTML = 'Kon de gegevens niet laden van GitHub (' + esc(String(err.message || err)) +
+      ').<br>Controleer je internetverbinding en herlaad de pagina.';
+  });
+</script>
+</body>
+</html>

@@ -51,7 +51,7 @@ async function fetchAndParseData() {
   `;
 
   try {
-    const response = await fetch('../Omgevingsanalyselijst/omgevingsanalyselijst.md');
+    const response = await fetch('20260713omgevingsanalyselijst.md');
     if (!response.ok) {
       throw new Error(`Failed to fetch markdown file: ${response.statusText}`);
     }
