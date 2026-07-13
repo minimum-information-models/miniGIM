@@ -51,13 +51,13 @@ async function fetchAndParseData() {
   `;
 
   try {
-    const response = await fetch('../omgevingsanalyselijst.md');
+    const response = await fetch('../Omgevingsanalyselijst/omgevingsanalyselijst.md');
     if (!response.ok) {
       throw new Error(`Failed to fetch markdown file: ${response.statusText}`);
     }
     const markdownText = await response.text();
     appState.modules = parseMarkdown(markdownText);
-    
+
     // Update Stats and Sidebar Filters
     renderStats();
     renderSidebar();
@@ -86,7 +86,7 @@ function parseMarkdown(text) {
   // Parse Headers from first line
   const headerLine = lines[0].trim();
   const rawHeaders = headerLine.split('|').map(s => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
-  
+
   const headers = [];
   let minisimIdx = -1;
 
@@ -181,7 +181,7 @@ function setupEventListeners() {
         appState.sortBy = column;
         appState.sortOrder = 'asc';
       }
-      
+
       // Update UI Header indicators
       headers.forEach(h => h.className = '');
       th.className = appState.sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc';
@@ -276,12 +276,12 @@ function escapeRegExp(string) {
 function formatDataSources(text, search) {
   if (!text) return '';
   const highlighted = highlightText(text, search);
-  
+
   // Extract URLs starting with http
   const urlRegex = /(https?:\/\/[^\s\)\],]+)/g;
   const urls = text.match(urlRegex);
   if (!urls) return highlighted;
-  
+
   let formatted = highlighted;
   urls.forEach(url => {
     let label = 'Open Bron';
@@ -292,7 +292,7 @@ function formatDataSources(text, search) {
     else if (url.includes('antenneregister.nl')) label = 'Antenneregister';
     else if (url.includes('cultureelerfgoed.nl')) label = 'RCE Geo';
     else if (url.includes('rce.geovoorziening.nl')) label = 'RCE Service';
-    
+
     const btnHtml = `
       <a href="${url}" target="_blank" class="source-btn" onclick="event.stopPropagation()">
         <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
@@ -310,12 +310,12 @@ function getBadgeHtml(val, type, search) {
   if (!val) return '';
   const cleanVal = val.trim();
   const lowerVal = cleanVal.toLowerCase();
-  
+
   let badgeClass = 'badge-default';
   if (lowerVal.includes('hoog')) badgeClass = 'badge-hoog';
   else if (lowerVal.includes('midden') || lowerVal.includes('middel')) badgeClass = 'badge-midden';
   else if (lowerVal.includes('laag') || lowerVal.includes('geen')) badgeClass = 'badge-laag';
-  
+
   return `<span class="badge ${badgeClass}">${highlightText(cleanVal, search)}</span>`;
 }
 
@@ -338,7 +338,7 @@ function renderTable() {
   if (appState.searchQuery) {
     filteredModules.forEach(mod => {
       mod.rows = mod.rows.filter(row => {
-        return Object.values(row).some(val => 
+        return Object.values(row).some(val =>
           String(val).toLowerCase().includes(appState.searchQuery)
         );
       });
@@ -457,7 +457,7 @@ function renderTable() {
 function toggleRowDetails(uniqueKey) {
   const detailsEl = document.getElementById(`details-${uniqueKey}`);
   const rowEl = document.getElementById(`row-${uniqueKey}`);
-  
+
   if (appState.expandedRows.has(uniqueKey)) {
     appState.expandedRows.delete(uniqueKey);
     rowEl.classList.remove('expanded');
