@@ -5,6 +5,5 @@
 *.vscode
 *.dot
 
-*.js
 *.exe
 temp
