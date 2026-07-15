@@ -29,7 +29,7 @@ De huidige technische structuur (v0.8/v0.9.1) volstaat voor pilots, maar schiet 
 | Data-inhoud  | Omgevingsanalyselijst 0.9.1      | Uitgebreide Omgevingsanalyselijst     |
 | Specificatie | ILS Excel 0.8                    | IDS (buildingSMART open standard)     |
 | Beheer       | Website (statisch)               | Actieve Governance structuur          |
-| Eigendom     | NEPROM                           | DMI (Digital Mainland Infrastructure) |
+| Eigendom     | NEPROM                           | Nader te bepalen                      |
 
 De overstap naar een IDS is essentieel om rework te elimineren. Door de informatiebehoefte machine-leesbaar te maken, kunnen gemeenten inkomende data van marktpartijen direct valideren. Dit voorkomt dat ambassadeurs van informatiemanagement handmatig data moeten corrigeren voordat deze bruikbaar is in het ruimtelijke proces.
 
