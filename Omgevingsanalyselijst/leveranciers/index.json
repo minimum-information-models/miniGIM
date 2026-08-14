@@ -1,0 +1,8 @@
+{
+  "toelichting": "Manifest van alle leveranciersbestanden. Voeg hier een regel toe wanneer je een nieuw bestand aanmaakt; de website leest uitsluitend deze lijst.",
+  "leveranciers": [
+    { "id": "demotool1", "bestand": "demotool1.md" },
+    { "id": "demotool2", "bestand": "demotool2.md" },
+    { "id": "demotool3", "bestand": "demotool3.md" }
+  ]
+}
