@@ -4,8 +4,10 @@ De omgevingsanalyselijst beschrijft *wat* je moet uitzoeken. Dit uitbreidingsmec
 beschrijft *hoe* je dat doet in een specifieke softwaretool. Elke leverancier beheert
 één eigen bestand; de hoofdlijst blijft leverancieronafhankelijk.
 
-Er is geen enkele installatie nodig: markdown bewerk je in GitHub en het controleren van de
-bestanden gebeurt in de website zelf, op het tabblad **Controle**.
+De website leest alles live uit GitHub: de hoofdlijst, `index.json` en de leveranciersbestanden.
+Een wijziging die je merget, staat na een herlaadactie in de site. Er is geen installatie, build
+of publicatiestap nodig; het controleren van de bestanden gebeurt in de website zelf, op het
+tabblad **Controle**.
 
 ## Opzet
 
@@ -20,6 +22,20 @@ Omgevingsanalyselijst/
 │  └─ demotool3.md
 └─ omgevingsanalyselijst.html    de website (bevat ook de controle)
 ```
+
+De website verwijst naar de repository via één instelling bovenin het HTML-bestand:
+
+```js
+const CONFIG = {
+  repo: 'minimum-information-models/miniGIM',
+  tak: 'main',
+  map: 'Omgevingsanalyselijst',
+  leveranciersMap: 'leveranciers'
+};
+```
+
+Alle URL's — de ruwe bestanden, de links naar GitHub en de commit-API — worden hieruit afgeleid.
+Wil je tegen een fork of een andere tak werken, dan pas je alleen dit blok aan.
 
 ## De ID is het contract
 
@@ -66,11 +82,18 @@ Regels zonder geldig ID worden niet getoond en verschijnen als fout op het tabbl
 | `naam` | ja | Volledige productnaam |
 | `korte_naam` | nee | Label op de badges in de tabel; standaard gelijk aan `naam` |
 | `leverancier` | ja | Je organisatie |
-| `versie` | nee | Versie waarop de uitleg betrekking heeft |
+| `versie` | nee | Terugval; normaal wordt de commit-hash getoond |
 | `website` | nee | Productpagina |
 | `contact` | nee | Mailadres voor vragen over de inhoud |
 | `kleur` | nee | Hex-kleur voor de badge, standaard grijs |
-| `bijgewerkt` | ja | Datum in `JJJJ-MM-DD`; wordt op de site getoond |
+| `bijgewerkt` | nee | Terugval; normaal wordt de commitdatum getoond |
+
+> **Versie en datum hoef je niet bij te houden.** De site haalt ze uit de git-historie van je
+> bestand: de datum van de laatste commit en de verkorte commit-hash als versienummer. Beide
+> verwijzen door naar die commit op GitHub, en de bestandsnaam linkt naar het bestand zelf.
+> Zo klopt de informatie altijd, ook als iemand vergeet de frontmatter bij te werken.
+> Staan de velden er wel in, dan dienen ze als terugval wanneer de GitHub-API tijdelijk
+> niet bereikbaar is (60 verzoeken per uur per IP-adres voor niet-ingelogde bezoekers).
 
 ### Tabel
 
@@ -99,9 +122,13 @@ CI-stap zou draaien, en meldt per bestand:
 | ID onbekend in de hoofdlijst | typefout, of het onderdeel is verwijderd |
 | ID komt meer dan één keer voor | dubbele regel in hetzelfde bestand |
 | Geen geldig ID-formaat | past niet op `XXX-00` |
-| Ontbrekend frontmatterveld | `naam`, `leverancier` of `bijgewerkt` mist |
+| Ontbrekend frontmatterveld | `naam` of `leverancier` mist |
 | Lege uitleg | regel zonder inhoud (waarschuwing, geen fout) |
 | Kon niet laden | staat in `index.json` maar het bestand ontbreekt |
+
+Bovenaan staat ook de herkomst van de hoofdlijst zelf: de datum, de auteur en de commit van de
+laatste wijziging. Loopt de API tegen zijn limiet aan, dan meldt het paneel dat en blijft de rest
+gewoon werken.
 
 Daaronder staat de dekking: hoeveel onderdelen door minstens één tool zijn beschreven, met
 een uitklapbare lijst van de onderdelen die nog niemand heeft gedocumenteerd.
