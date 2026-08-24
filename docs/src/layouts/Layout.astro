@@ -1,0 +1,42 @@
+---
+import "../styles/global.css"
+
+import { Image } from "astro:assets";
+import NewsletterSignup from "../components/NewsletterSignup.astro"
+import Link from "../components/Link.astro";
+import Container from "../components/Container.astro";
+import NoLayout from "./NoLayout.astro";
+
+const {
+    title = "MiniGIM - Minimale gebieds-ontwikkeling Informatie en Analyse",
+    description = "MiniGIM maakt gebiedsontwikkelingen transparanter, voorspelbaarder en sneller realiseerbaar."
+} = Astro.props;
+---
+<NoLayout title={title} description={description}>
+    <slot />
+    <footer class="contour-background">
+        <Container>
+            <div class="entries">
+                <div class="entry">
+                    <div class="column muted">
+                        <Link href="mailto:info@minigim.nl">Neem contact op</Link>
+                        <Link href="/privacyverklaring/">Privacyverklaring</Link>
+                        <Link href="/gebruiksvoorwaarden/">Gebruikersvoorwaarden</Link>
+                    </div>
+                </div>
+                <div class="entry">
+                    <NewsletterSignup id="footer" />
+                </div>
+            </div>
+            <hr/>
+            <div class="row justify-content-center">
+                <div class="muted" style="text-align: center">
+                    In samenwerking met<br/>
+                    <a href="https://bimsentry.com" target="_blank">
+                        <Image src="https://bimsentry.com/static/logo-wide@2x.png" alt="BIMsentry.com" width="118" height="22"/>
+                    </a>
+                </div>
+            </div>
+        </Container>
+    </footer>
+</NoLayout>

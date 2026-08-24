@@ -1,0 +1,539 @@
+---
+import {Image} from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import NewsletterSignup from "../components/NewsletterSignup.astro";
+import LinkButton from "../components/LinkButton.astro";
+import Link from "../components/Link.astro";
+import Navbar from "../components/Navbar.astro";
+import Container from "../components/Container.astro";
+---
+<style>
+    section.hero {
+        padding: 5rem 0 10rem 0;
+
+        .text {
+            width: 100%;
+        }
+
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 5.0rem;
+            margin-bottom: 4.0rem;
+            margin-left: -0.2rem;
+            font-weight: 800;
+            letter-spacing: -0.1rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: var(--gray-dark);
+            margin: 3rem 0;
+            line-height: 1.6em;
+
+            strong {
+                font-weight: 700;
+                color: var(--black);
+                text-decoration: underline;
+                text-decoration-color: var(--yellow);
+                text-decoration-thickness: 3px;
+            }
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            line-height: 2.0rem;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.9rem;
+        }
+
+        blockquote {
+            padding: 0 10% 2rem 10%;
+            text-align: center;
+
+            > * {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media only screen and (max-width: 1200px) {
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            blockquote > * {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media only screen and (max-width: 800px) {
+            padding: 1rem 0 3rem 0;
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            blockquote > * {
+                font-size: 1.3rem;
+            }
+        }
+    }
+
+    section.model {
+        canvas {
+            width: 100%;
+            display: block;
+            max-width: 2200px;
+            margin: 7rem auto -5rem auto;
+            aspect-ratio: 2;
+        }
+
+        @media only screen and (max-width: 1200px) {
+            canvas {
+                margin: 8rem auto -5rem auto;
+                aspect-ratio: 1.5;
+            }
+        }
+
+        @media only screen and (max-width: 800px) {
+            canvas {
+                margin: 10rem auto -5rem auto;
+                aspect-ratio: 1.5;
+                padding-top: 4rem;
+            }
+        }
+    }
+
+    .steps-bar {
+        margin: 0;
+        padding: 0;
+        border: 1px solid var(--gray-light);
+        border-radius: 0.5rem;
+        overflow-x: scroll;
+        box-shadow: var(--shadow);
+        background-color: white;
+
+        display: flex;
+        flex-direction: row;
+        gap: 0;
+
+        li {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 1.2rem 1.6rem;
+
+            &:not(:first-child) {
+                border-left: 1px solid var(--gray-lighter);
+            }
+
+            h1 {
+                font-size: 0.8rem;
+                line-height: 1.4em;
+                text-align: center;
+                height: 2.5em;
+            }
+
+            svg {
+                width: 100%;
+            }
+
+            img {
+                display: block;
+                margin: 0 auto;
+            }
+        }
+
+        @media only screen and (max-width: 800px) {
+            li {
+                padding: 0.3rem 0.4rem;
+
+                h1 {
+                    font-size: 0.6rem;
+                }
+            }
+        }
+    }
+</style>
+<Layout>
+    <Navbar slideIn={true}/>
+    <section class="hero">
+        <Container>
+            <div class="text">
+                <h1>MiniGIM</h1>
+                <h2>Met MiniGIM &mdash; <i>GebiedsInformatieModel</i> &mdash; worden gebiedsontwikkelingen
+                    <strong>transparanter</strong>, <strong>voorspelbaarder</strong>, en daardoor ook
+                    <strong>sneller</strong> gerealiseerd – met een betere <strong>integrale kwaliteit</strong>
+                    &eacute;n gerichte <strong>sturing op financi&euml;le haalbaarheid</strong>.</h2>
+                <blockquote>
+                    <span>
+                        Geen dikke rapporten, eindeloze ICT-trajecten en bijbehorende vertraging, maar praktisch
+                        toepasbare tools en werkwijzen die zich al hebben bewezen.
+                    </span>
+                </blockquote>
+            </div>
+        </Container>
+    </section>
+    <section class="model">
+        <script>import "../scripts/model.js"</script>
+        <div class="model-controller-container">
+            <div class="model-controller">
+                <div class="top-bar">
+                    <input id="lod-left-button" class="chevron-button" type="button"
+                           onclick="document.getElementById('lod-slider').value = parseInt(document.getElementById('lod-slider').value) - 1"
+                           value="&lsaquo;"/>
+                    <div class="content">
+                        <h3 id="lod-header"></h3>
+                        <div id="lod-description"></div>
+                        <input style="display: none;" id="lod-slider" type="range" min="0" max="5" value="0"/>
+                    </div>
+                    <input id="lod-right-button" class="chevron-button" type="button"
+                           onclick="document.getElementById('lod-slider').value = parseInt(document.getElementById('lod-slider').value) + 1"
+                           value="&rsaquo;"/>
+                </div>
+                <div class="legend" id="lod-legend"></div>
+            </div>
+        </div>
+        <canvas id="canvas"></canvas>
+    </section>
+    <section>
+        <Container>
+            <h3>Wat is MiniGIM?</h3>
+            <p>MiniGIM is een initiatief van onder andere BPD, Blauwhoed, VORM, MRP, COD en Kavelvastgoed en bestaat
+                uit twee kernonderdelen:</p>
+            <ol>
+                <li>
+                    <h4>Omgevingsanalyse Lijst</h4>
+                    <p>Een complete checklist met omgevingsanalyses, risico’s en inventarisaties &mdash; ontwikkeld op
+                        basis van input van grote gebiedsontwikkelaars. Met deze Lijst voorkom je dat belangrijke
+                        elementen ontbreken of onvoldoende worden uitgewerkt.</p>
+                </li>
+                <li>
+                    <h4>Informatie Leverings Specificatie (ILS)</h4>
+                    <p>Dit document beschrijft de minimale dataset die nodig is om een grondexploitatie (GREX)
+                        onveranderd en inhoudelijk onderbouwd te realiseren &mdash; zowel financieel als
+                        inhoudelijk.</p>
+                </li>
+            </ol>
+        </Container>
+    </section>
+    <section class="contour-background">
+        <Container>
+            <div class="entries">
+                <div class="entry">
+                    <p>
+                        <LinkButton href="/downloads/MiniGIM-omgevingsanalyse-lijst-v0.91.xlsx" download>
+                            Download de omgevingsanalyse lijst (v0.91)
+                        </LinkButton>
+                    </p>
+                    <p>
+                        <LinkButton href="/downloads/MiniGIM-ILS-v0.8.xlsx" download>
+                            Download de ILS Excel (v0.8)
+                        </LinkButton>
+                    </p>
+                    <p class="muted">Komende jaren zullen deze documenten verder ontwikkeld worden, in samenwerking met
+                        gemeenten, softwareleveranciers en gebiedsontwikkelaars. Updates verschijnen hier.</p>
+                </div>
+                <div class="entry">
+                    <NewsletterSignup id="landing"/>
+                </div>
+            </div>
+        </Container>
+    </section>
+    <section>
+        <Container>
+            <h3>Hoe is MiniGIM te gebruiken?</h3>
+            <p>Door gebruik te maken van de omgevingsanalyse lijst als checklist kan men vroegtijdig veel kansen en
+                risico's in kaart brengen. Weet men waar de benodigde data kan vinden, en in welk standaard formaat dit
+                dient gedeeld te worden met andere stakeholders. Door op een gestructureerde wijze deze data, kansen, en
+                risico's te verzamelen en beschikbaar te maken, kan een betere gebiedsindeling tot stand komen met meer
+                betrokken stakeholders.</p>
+            <p>Tegelijkertijd kan men middels een GREX, snel een gebiedsindeling vormgeven, en deze samen met
+                stakeholders
+                evalueren. MiniGIM geeft de ruimte om afhankelijk van de fase en informatiebehoefte, de gebiedsindeling
+                uit te werken in globale lijnen, of uit te werken tot in detail.</p>
+        </Container>
+        <ul class="carousel">
+            <li class="item">
+                <img src="/images/omgeving-statistieken.png"/>
+                <label>Casus Scheveningen: De samenstelling van de omgeving werd gebruikt om te bepalen wat de
+                    invloed was op het programma. Dergelijke informatie kan worden gehaald uit PDOK.</label>
+            </li>
+            <li class="item">
+                <img src="/images/omgeving-infra.png"/>
+                <label>Casus Scheveningen: Bereikbaarheid, en mobiliteit kunnen invloed hebben op het
+                    ontwerp.</label>
+            </li>
+            <li class="item">
+                <img src="/images/omgeving-geluid.png"/>
+                <label>Casus Scheveningen: Door geluidscontouren van verkeer en industrie in kaart te brengen kunnen
+                    kansen en risico's vroegtijdig geidentificeerd worden.</label>
+            </li>
+            <li class="item">
+                <img src="/images/omgeving-grondwaterpeil.png"/>
+                <label>Casus Scheveningen: Onderzoek het grondwaterpeil in het gebied. Dit kan namelijk invloed
+                    hebben op het ontwerp.</label>
+            </li>
+            <li class="item">
+                <img src="/images/grex-spaces.png"/>
+                <label>Casus Nijevoert: De gebiedsindeling kan helpen bij het beantwoorden van diverse vragen: Welke
+                    gebieden zijn openbaar, en welke zijn uitgeefbaar? Hoe kan verkeer zich door het gebied
+                    verplaatsen?</label>
+            </li>
+            <li class="item">
+                <img src="/images/grex-woningen.png"/>
+                <label>Casus Nijevoert: Weten hoeveel woningen (en typen) een ontwerp bevat helpt bij het bepalen
+                    van de kosten en baten. </label>
+            </li>
+            <li class="item">
+                <img src="/images/grex-parkeren.png"/>
+                <label>Casus Nijevoert: Wetend hoeveel woningen en parkeerplaatsen een ontwerp faciliteert kan men
+                    snel controleren of deze indeling voldoet aan de parkeernorm van de gemeente.</label>
+            </li>
+            <li class="item">
+                <img src="/images/grex-buurt.png"/>
+                <label>Casus Nijevoert: Door deze en andere data samen te voegen en mee te nemen in het process kan
+                    men snel een alle kansen en risico's (ontwerp, proces, financieel, etc.) in kaart
+                    brengen.</label>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <Container>
+            <h3>Waarom is MiniGIM belangrijk?</h3>
+            <p>Omdat de praktijk van gebiedsontwikkeling echt anders kan. Sneller. Slimmer. Transparanter. Met
+                minder dubbel werk. En meer grip op keuzes in de planvorming. En vooral: vanuit een betere
+                samenwerking tussen alle stakeholders.</p>
+            <p>Veel gebiedsontwikkelingen lopen nu nog te vaak vertraging op doordat essentiële analyses
+                ontbreken of onvolledig zijn. Dat leidt tot faalkosten en ineffectiviteit. En dat kan dus
+                anders. Moet anders. Met MiniGIM. </p>
+            <br/>
+            <p>Met MiniGIM:</p>
+            <ul>
+                <li>Voer je een transparante, datagedreven dialoog met gemeenten en andere stakeholders</li>
+                <li>Werk je samen vanuit &eacute;&eacute;n betrouwbare informatiebron.</li>
+                <li>Verlaag je faalkosten &eacute;n verbeter je de kwaliteit van besluitvorming.</li>
+                <li>Stuur je proactief, ook op financi&euml;le haalbaarheid.</li>
+                <li>Optimaliseer je ontwikkeltijd via slimme planning</li>
+                <li>Sluit je aan op open standaarden en landelijke systemen zoals DMI, DSO, BGT/BRO.</li>
+            </ul>
+            <br/>
+            <ul class="slides">
+                <li>
+                    <a class="slide" href="/downloads/Provada-MiniGIM-slides.pdf" target="_blank">
+                        <img src="/images/Provada-MiniGIM-slide-1.jpg" title="Slides Provada 2025"/>
+                    </a>
+                    <label>MiniGIM vormt een solide basis voor het co&ouml;rdineren van diverse processen en
+                        stakeholders.</label>
+                </li>
+                <li>
+                    <a class="slide" href="/downloads/Provada-MiniGIM-slides.pdf" target="_blank">
+                        <img src="/images/Provada-MiniGIM-slide-2.jpg" title="Slides Provada 2025"/>
+                    </a>
+                    <label>MiniGIM sluit nauw aan op latere processen en standaarden die gebruikt worden bij
+                        het verder uitontwikkelen van het gebied.</label>
+                </li>
+            </ul>
+        </Container>
+    </section>
+    <section>
+        <Container>
+            <h3>Hoe verloopt het proces met MiniGIM?</h3>
+            <ol class="steps">
+                <li>Stel een Programma van Eisen (PvE) op met heldere en toetsbare doelen.</li>
+                <li>Bepaal welke analyses nodig zijn, zowel n&uacute; als in de toekomst.</li>
+                <li>Plan deze analyses samen met de betrokken gemeente binnen een realistisch tijdschema.</li>
+                <li>Ontwikkel ontwerpvarianten op basis van de ILS, gebruikmakend van 3D-modellen.</li>
+                <li>Lever de modellen als IFC-bestanden (BIM of parametrisch): dit waarborgt leesbaarheid,
+                    betrouwbaarheid en naleving van gemeentelijke standaarden.
+                </li>
+            </ol>
+            <br/>
+            <ul class="steps-bar">
+                <li>
+                    <h1>Programma van Eisen</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                         class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"
+                              stroke="var(--yellow)"/>
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                        <path d="M9 14h.01"/>
+                        <path d="M9 17h.01"/>
+                        <path d="M12 16l1 1l3 -3"/>
+                    </svg>
+                </li>
+                <li>
+                    <h1>Inventariseren</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                         class="icon icon-tabler icons-tabler-outline icon-tabler-map-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M11 18l-2 -1l-6 3v-13l6 -3l6 3l6 -3v7.5" stroke="var(--yellow)"/>
+                        <path d="M9 4v13" stroke="var(--gray-light)"/>
+                        <path d="M15 7v5" stroke="var(--gray-light)"/>
+                        <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                        <path d="M20.2 20.2l1.8 1.8"/>
+                    </svg>
+                </li>
+                <li>
+                    <h1>Analyseren</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                         class="icon icon-tabler icons-tabler-outline icon-tabler-messages">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/>
+                        <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" stroke="var(--yellow)"/>
+                    </svg>
+                </li>
+                <li>
+                    <h1>Ontwerpen</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                         class="icon icon-tabler icons-tabler-outline icon-tabler-squares-selected">
+                        <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"/>
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M8 10a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+                              stroke="var(--yellow)"/>
+                        <path d="M8 14.5l6.492 -6.492" stroke="var(--yellow)"/>
+                        <path d="M13.496 20l6.504 -6.504z" stroke="var(--yellow)"/>
+                        <path d="M8.586 19.414l10.827 -10.827" stroke="var(--yellow)"/>
+                    </svg>
+                </li>
+                <li>
+                    <h1>Opleveren</h1>
+                    <img src="/images/ifc.png" width="64" height="64"/>
+                </li>
+            </ul>
+        </Container>
+    </section>
+    <section>
+        <Container>
+            <div class="entries">
+                <div class="entry">
+                    <h3>Intentieverklaring op Provada 2025</h3>
+                    <p>Op vastgoedbeurs <strong>Provada 2025</strong> (17-19 juni jl.) ondertekenden tal van publieke en
+                        private partijen de <strong>Intentieverklaring MiniGIM</strong>. Dit moment symboliseert de
+                        gezamenlijke inzet voor meer standaardisatie, transparantie en samenwerking— niet als een losse
+                        belofte, maar op basis van concrete afspraken.</p>
+                    <div style="margin-top: 3rem">
+                        <a href="/images/PLF_PROVADA_180625-47b.jpg" download>
+                            <img src="/images/PLF_PROVADA_180625-47b.jpg" class="photo"
+                                 style="rotate: -4deg; position: relative; left: -2rem;"/>
+                        </a>
+                        <a href="/images/PLF_PROVADA_180625-54b.jpg" download>
+                            <img src="/images/PLF_PROVADA_180625-54b.jpg" class="photo"
+                                 style="rotate: 1deg; position: relative; left: 2rem; margin-top: -6rem"/>
+                        </a>
+                    </div>
+                </div>
+                <div class="entry">
+                    <h3>Deelnemers DMI-ecosysteem aan de slag met MiniGIM</h3>
+                    <p>Het DMI-ecosysteem heeft het standaard informatieprofiel van gebieden zoals onderdeel van MiniGIM
+                        <Link href="https://dmi-ecosysteem.nl/blog/use-case/minigim-versnelt-gebiedsontwikkeling-en-biedt-voorspelbaarheid/" target="_blank">
+                            enthousiast omarmd.
+                        </Link>
+                        De komende periode bereiden DMI-deelnemers waaronder de gemeenten Rotterdam, Apeldoorn, Alkmaar
+                        en Dordrecht en het ministerie van Infrastructuur en Waterstaat het gebruik van MiniGIM voor.
+                    </p>
+                    <p>Ben je actief als:</p>
+                    <ul>
+                        <li>Marktpartij</li>
+                        <li>Softwareleverancier of digital twin-specialist</li>
+                        <li>Gemeente</li>
+                        <li>Zelfstandig adviseur, planner of gebiedsprofessional?</li>
+                    </ul>
+                    <p>Dan nodigen we je graag uit om mee te doen met MiniGIM!</p>
+                    <br/>
+                    <h3>Wat kun je doen?</h3>
+                    <ul>
+                        <li>Bekijk
+                            <Link href="https://youtu.be/a9DZPrzkZy8" target="_blank">de MiniGIM webinar.</Link>
+                        </li>
+                        <li>
+                            <Link href="mailto:info@minigim.nl">Reageer op de hierboven genoemde MiniGIM-componenten</Link>
+                            :
+                            geef aan welke onderdelen je kunt leveren of ondersteunen.
+                        </li>
+                        <li>Op basis van reacties organiseren we de komende tijd verschillende bijeenkomsten en sessies
+                            om het netwerk rond MiniGIM verder uit te breiden.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </Container>
+    </section>
+    <section>
+        <Container>
+            <h3>De beheerders van MiniGIM</h3>
+            <div class="entries">
+                <div class="entry">
+                    <div style="margin-left: -30px; width: 440px; height: 102px">
+                        <Image src="/logos/dmi.png" alt="DMI-ecosysteem logo" width="440" height="100"/>
+                    </div>
+                    <p>
+                        DMI is een publiek-privaat ecosysteem dat zich richt op het maximaal benutten van de kansen
+                        die data en (nieuwe) technologie bieden om steden versneld duurzaam te verdichten en mobiliteit
+                        te vernieuwen. Wij geloven in een integrale en digitale aanpak. Daarbij verbinden we opgaven op
+                        het gebied van verstedelijking, mobiliteit, klimaat, energie en het sociaal domein aan elkaar.
+                        En maken we data en digitale oplossingen vindbaar en overdraagbaar. Data over die onderwerpen
+                        geeft steden een beter inzicht in wat er daadwerkelijk op straat gebeurt. Op basis daarvan
+                        sturen zij gerichter op het gebruik van de schaarse ruimte. En ontwerpen en realiseren zij de
+                        duurzame steden van de toekomst.
+                    </p>
+                    <p>
+                        Het DMI-ecosysteem heeft het standaard informatieprofiel van gebieden zoals onderdeel van
+                        MiniGIM inmiddels omarmd.
+                    </p>
+                    <p>
+                        Iedereen die wil bijdragen aan het slim en duurzaam inrichten en functioneren van onze steden
+                        is van harte welkom om mee te doen met het DMI-ecosysteem. Met elkaar bouwen we aan het
+                        Nederland van vandaag &eacute;n morgen.
+                    </p>
+                    <p>
+                        Meer weten?
+                        <Link href="https://dmi-ecosysteem.nl">Op onze website</Link>
+                        vindt u informatie over onze werkwijze en alle DMI-deelnemers.
+                    </p>
+                </div>
+                <div class="entry">
+                    <div style="margin-left: -30px; width: 440px; height: 102px">
+                        <Image src="/logos/neprom.png" alt="NEPROM logo" width="352" height="102"/>
+                    </div>
+                    <p>
+                        NEPROM is de brancheorganisatie van maatschappelijk betrokken project- en gebiedsontwikkelaars
+                        in Nederland. NEPROM werkt met haar leden, en in nauwe samenwerking met de overheid en andere
+                        partners, aan het ontwikkelen van de ruimte voor morgen. We zetten ons in voor het creëren van
+                        duurzame en leefbare omgevingen, waar wonen, werken, recreatie, mobiliteit en natuur in
+                        samenhang worden ontwikkeld. Wij geloven in samenwerking tussen markt, overheid en
+                        maatschappelijke partners. Samen werken we aan integrale oplossingen voor opgaven zoals
+                        klimaat, circulair bouwen, klimaatadaptatie, natuur-inclusiviteit en maatschappelijke
+                        meerwaarde.
+                    </p>
+                    <p>
+                        Onze leden houden zich aan hoge standaarden: integriteit, zorgvuldigheid en maatschappelijke
+                        verantwoordelijkheid zijn kernwaarden. Wij stimuleren innovatie en kennisdeling, en zorgen
+                        dat beleid én praktijk effectiever worden verbonden.
+                    </p>
+                    <p>
+                        Iedere ontwikkelaar die professioneel opereert en zich wil inzetten voor een toekomstbestendige
+                        inrichting van gebieden is welkom bij NEPROM. Samen bouwen we aan het Nederland van vandaag
+                        &eacute;n morgen.
+                    </p>
+                    <p>
+                        Meer weten?
+                        <Link href="https://neprom.nl">Op onze website</Link>
+                        vindt u meer informatie over onze rol, leden, beleidsprogramma’s en onze gedragscode.
+                    </p>
+                </div>
+            </div>
+        </Container>
+    </section>
+</Layout>

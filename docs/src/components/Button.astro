@@ -1,0 +1,71 @@
+---
+const {type, name, onClick} = Astro.props;
+---
+<style>
+    .button {
+        --base-color: #f8f8f8;
+        --text-color: #000000;
+
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+        background-color: var(--base-color);
+        color: var(--text-color);
+        border: 0;
+        border-bottom: 0.2rem solid var(--border-color);
+        padding: 0.8rem 1.0rem 0.6rem 1.0rem;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        cursor: pointer;
+
+        &:not(.primary) {
+            &:hover {
+                border-bottom-color: var(--base-color);
+                background-color: color-mix(in srgb, var(--base-color) 80%, #ffffff);
+            }
+
+            &:disabled {
+                --base-color: var(--gray);
+                --border-color: var(--gray);
+                --text-color: white;
+                cursor: not-allowed;
+
+                &:hover {
+                    --base-color: var(--gray);
+                    --border-color: var(--gray);
+                    --text-color: white;
+                }
+            }
+        }
+
+        &.primary {
+            --base-color: var(--primary-color);
+            --text-color: var(--text-color);
+            --border-color: color-mix(in srgb, var(--base-color) 80%, #000000);
+
+            &:disabled {
+                --base-color: var(--gray);
+                --border-color: var(--gray-dark);
+                --text-color: white;
+                cursor: not-allowed;
+
+                &:hover {
+                    --base-color: var(--gray);
+                    --border-color: var(--gray-dark);
+                    --text-color: white;
+                }
+            }
+
+            &:not(:disabled) {
+                &:hover {
+                    border-bottom-color: var(--base-color);
+                    background-color: color-mix(in srgb, var(--base-color) 80%, #ffffff);
+                }
+            }
+        }
+
+    }
+</style>
+<button type={type} name={name} class="button primary" onclick={onClick}>
+    <slot/>
+</button>

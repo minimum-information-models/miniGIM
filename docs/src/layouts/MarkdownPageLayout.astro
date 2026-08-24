@@ -1,0 +1,27 @@
+---
+import Layout from './Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Container from '../components/Container.astro';
+
+const { frontmatter } = Astro.props;
+const title = frontmatter?.title
+    ? `${frontmatter.title} | MiniGIM`
+    : 'MiniGIM - Minimale gebieds-ontwikkeling Informatie en Analyse';
+const description = frontmatter?.description
+    ?? 'Informatiepagina van MiniGIM.';
+---
+<style>
+    .markdown-page {
+        margin-top: 3rem;
+    }
+</style>
+<Layout title={title} description={description}>
+    <Navbar />
+    <section>
+        <Container>
+            <article class="markdown-page">
+                <slot />
+            </article>
+        </Container>
+    </section>
+</Layout>

@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from "../components/Navbar.astro";
+import Container from "../components/Container.astro";
+
+const { code, message } = Astro.props;
+---
+<style>
+		.error {
+				width: 100%;
+				text-align: center;
+				margin: 10rem 0;
+
+				.code {
+						color: white;
+						font-size: 10rem;
+						letter-spacing: -1rem;
+            text-shadow: -3px -3px 0 var(--gray-lighter), 3px -3px 0 var(--gray-lighter), -3px 3px 0 var(--gray-lighter), 3px 3px 0 var(--gray-lighter);
+						line-height: 10rem;
+						font-weight: 800;
+				}
+
+				.message {
+						color: var(--gray);
+				}
+		}
+</style>
+<Layout>
+	<Navbar />
+	<section>
+		<Container>
+			<div class="error">
+				<div class="code">{code}</div>
+				<span class="message">{message}</span>
+      </div>
+    </Container>
+	</section>
+</Layout>

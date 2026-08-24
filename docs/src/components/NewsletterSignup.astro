@@ -1,0 +1,142 @@
+---
+import Button from "./Button.astro";
+import Link from "./Link.astro";
+
+const { id } = Astro.props;
+---
+<style>
+    @keyframes fadeIn {
+        0% {
+            display: none;
+            max-height: 0;
+            opacity: 0;
+        }
+        1% {
+            display: block;
+            max-height: 0;
+            opacity: 0;
+        }
+        100% {
+            display: block;
+            max-height: 100%;
+            opacity: 1;
+        }
+    }
+    @keyframes fadeOut {
+        0% {
+            display: block;
+            max-height: 100%;
+            opacity: 1;
+        }
+        1% {
+            display: block;
+            max-height: 100%;
+            opacity: 1;
+        }
+        100% {
+            display: none;
+            max-height: 0;
+            opacity: 0;
+        }
+    }
+
+    .column {
+        max-width: 550px;
+    }
+    .hidden {
+        display: none;
+    }
+    .fadeIn {
+        animation: fadeIn 2s;
+    }
+    .fadeOut {
+        animation: fadeOut 2s;
+    }
+    .output-message {
+        border: 1px solid var(--gray);
+        border-radius: var(--border-radius);
+        background-color: color-mix(in srgb, var(--gray) 10%, white);
+        color: var(--gray);
+        font-size: 0.9rem;
+        padding: 0.431rem 1rem;
+    }
+    .success {
+        border-color: var(--green);
+        background-color: color-mix(in srgb, var(--green) 10%, white);
+        color: var(--green);
+    }
+    .error {
+        border-color: var(--red);
+        background-color: color-mix(in srgb, var(--red) 10%, white);
+        color: var(--red);
+    }
+</style>
+<script define:vars={{id}}>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formElement = document.getElementById(id);
+        formElement.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (formElement.disabled) return;
+
+            const emailField = formElement.querySelector("*[name=email]");
+            const submitButton = formElement.querySelector("*[name=submit]");
+            const outputMessage = formElement.querySelector("*[name=output-message]");
+
+            emailField.disabled = true;
+            submitButton.disabled = true;
+            formElement.disabled = true;
+
+            const config = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ "email": emailField.value })
+            };
+
+            fetch("https://api.minigim.nl/contacts", config)
+                .then(async (response) => {
+                    const json = await response.json();
+                    const status = response.status;
+
+                    if ((status >= 200 && status < 300) || (json.type === "CONTACT_ALREADY_EXISTS")) {
+                        outputMessage.classList.add("success");
+                        outputMessage.innerHTML = "Je bent aangemeld voor updates via e-mail!";
+                    }
+                    else {
+                        outputMessage.classList.add("error");
+                        outputMessage.innerHTML = "Er ging iets mis met je aanmelding. Probeer het later nog eens!";
+                    }
+                    outputMessage.classList.remove("hidden");
+                    outputMessage.classList.add("fadeIn");
+
+                    emailField.disabled = false;
+                    submitButton.disabled = false;
+                    formElement.disabled = false;
+
+                    setTimeout(() => {
+                        outputMessage.classList.remove("fadeIn");
+                        outputMessage.classList.add("fadeOut");
+
+                        setTimeout(() => {
+                            outputMessage.classList.remove("fadeOut");
+                            outputMessage.classList.add("hidden");
+                        }, 1900);
+                    }, 2000);
+                });
+        });
+    });
+</script>
+<div class="column" data-id={`${id}`}>
+    <form method="POST" id={id}>
+        <h1 class="form-caption">Laat je e-mailadres achter om up to date te blijven.</h1>
+        <div name="output-message" class="hidden output-message"></div>
+        <div class="form">
+            <div class="row">
+                <input name="email" type="email" placeholder="E-mailadres" required>
+                <Button name="submit" type="submit">Aanmelden</Button>
+            </div>
+        </div>
+        <p class="muted">Door je e-mailadres te delen, ga je akkoord met het ontvangen van e-mails met betrekking tot de MiniGIM standaard. <Link href="/privacyverklaring/">We delen je e-mailadres nooit met derden.</Link></p>
+    </form>
+</div>

@@ -1,0 +1,10 @@
+---
+const { href, target, className } = Astro.props;
+---
+<style>
+    .link {
+        color: var(--black);
+        font-weight: 600;
+    }
+</style>
+<a href={href} class:list={["link", className]} target={target}><slot /></a>

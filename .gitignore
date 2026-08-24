@@ -7,3 +7,8 @@
 
 *.exe
 temp
+
+# Astro site artifacts
+docs/node_modules/
+docs/dist/
+docs/.astro/

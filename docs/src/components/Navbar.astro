@@ -1,0 +1,53 @@
+---
+import Link from "./Link.astro";
+import Container from "./Container.astro";
+
+const { slideIn = false } = Astro.props;
+---
+{slideIn && <script>
+    const clamp = (min, a, max) => Math.min(max, Math.max(min, a));
+    const invlerp = (x, y, a) => clamp(0, (a - x) / (y - x), 1);
+
+    function refresh() {
+        var ratio = clamp(0, invlerp(550, 650, window.scrollY), 1);
+        document.getElementById("navbar").style.top = "calc(-8rem * " + (1 - ratio) + ")";
+
+        requestAnimationFrame(refresh);
+    }
+
+    refresh();
+</script>}
+<style>
+    .navbar {
+        position: fixed;
+        width: 100%;
+        height: 4.5rem;
+        z-index: 10;
+
+        background-color: white;
+        border-bottom: 2px solid var(--gray-lighter);
+        box-shadow: var(--gray-lighter) 0 0 35px;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .brand {
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.6rem;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--gray);
+            line-height: 0.8rem;
+        }
+    }
+</style>
+<nav id="navbar" class:list={["navbar", slideIn && "slide-in"]}>
+    <Container>
+        <Link href="/" className="brand">MiniGIM</Link>
+        <div class="subtitle">Minimale gebieds-ontwikkeling Informatie en Analyse</div>
+    </Container>
+</nav>

@@ -1,0 +1,32 @@
+---
+const { href, ...other } = Astro.props;
+---
+<style>
+    .button {
+        --base-color: #f8f8f8;
+        --text-color: #000000;
+
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+        background-color: var(--base-color);
+        color: var(--text-color);
+        border: 0;
+        border-bottom: 0.2rem solid var(--border-color);
+        padding: 0.6rem 1.0rem 0.4rem 1.0rem;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+
+        &:hover {
+            border-bottom-color: var(--base-color);
+            background-color: color-mix(in srgb, var(--base-color) 80%, #ffffff);
+        }
+
+        &.primary {
+            --base-color: var(--primary-color);
+            --text-color: var(--text-color);
+            --border-color: color-mix(in srgb, var(--base-color) 80%, #000000);
+        }
+    }
+</style>
+<a href={href} class="button primary" role="button" {...other}><slot /></a>
