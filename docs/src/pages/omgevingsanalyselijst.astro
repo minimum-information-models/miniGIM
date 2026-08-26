@@ -1,7 +1,7 @@
 ---
 import NoLayout from "../layouts/NoLayout.astro";
 ---
-<style>
+<style is:global>
     :root {
         --bg: #f6f7f9; --card: #fff; --ink: #1c2430; --muted: #64748b;
         --accent: #0f6bd7; --accent-soft: #e8f1fc; --border: #e2e8f0; --hl: #fff3bf;
@@ -126,586 +126,586 @@ import NoLayout from "../layouts/NoLayout.astro";
     footer { text-align:center; color:var(--muted); font-size:12px; padding:0 28px 40px; }
 </style>
 <NoLayout>
-	<header>
-	    <h1>Omgevingsanalyselijst</h1>
-	    <p class="sub">miniGIM — live uit
-	        <a id="repolink" href="https://github.com/minimum-information-models/miniGIM" target="_blank" rel="noopener">GitHub</a>:
-	        de hoofdlijst en de softwaredocumentatie per leverancier. Versie en datum komen uit de git-historie.</p>
-	    <div class="tabs">
-	        <button class="tab on" data-view="lijst" type="button">Onderdelen</button>
-	        <button class="tab" data-view="tools" type="button">Softwaretools</button>
-	        <button class="tab" data-view="controle" type="button">Controle</button>
-	    </div>
-	    <div class="controls">
-	        <input id="search" type="search" placeholder="Zoek in onderdelen én softwaredocumentatie…" autocomplete="off">
-	        <span id="count"></span>
-	    </div>
-	    <div class="toolpicker" id="toolpicker"></div>
-	    <div id="filterbar">
-	        <span class="lbl">Actieve filters:</span>
-	        <span id="chips"></span>
-	        <button id="resetFilters" type="button">✕ Reset filters</button>
-	    </div>
-	</header>
+    <header>
+        <h1>Omgevingsanalyselijst</h1>
+        <p class="sub">miniGIM — live uit
+            <a id="repolink" href="https://github.com/minimum-information-models/miniGIM" target="_blank" rel="noopener">GitHub</a>:
+            de hoofdlijst en de softwaredocumentatie per leverancier. Versie en datum komen uit de git-historie.</p>
+        <div class="tabs">
+            <button class="tab on" data-view="lijst" type="button">Onderdelen</button>
+            <button class="tab" data-view="tools" type="button">Softwaretools</button>
+            <button class="tab" data-view="controle" type="button">Controle</button>
+        </div>
+        <div class="controls">
+            <input id="search" type="search" placeholder="Zoek in onderdelen én softwaredocumentatie…" autocomplete="off">
+            <span id="count"></span>
+        </div>
+        <div class="toolpicker" id="toolpicker"></div>
+        <div id="filterbar">
+            <span class="lbl">Actieve filters:</span>
+            <span id="chips"></span>
+            <button id="resetFilters" type="button">✕ Reset filters</button>
+        </div>
+    </header>
 
-	<main>
-	    <div id="status">Gegevens laden…</div>
-	    <div id="content"></div>
-	</main>
-	<footer>Bron: minimum-information-models/miniGIM · kolom “MiniSIM/BIM relatie” is weggelaten</footer>
+    <main>
+        <div id="status">Gegevens laden…</div>
+        <div id="content"></div>
+    </main>
+    <footer>Bron: minimum-information-models/miniGIM · kolom “MiniSIM/BIM relatie” is weggelaten</footer>
 
-	<script>
-		// ───────────────────────── configuratie ─────────────────────────
-		const CONFIG = {
-			repo: 'minimum-information-models/miniGIM',
-			tak: 'main',
-			map: 'Omgevingsanalyselijst',        // map met omgevingsanalyselijst.md
-			leveranciersMap: 'leveranciers'      // submap met index.json en de leveranciersbestanden
-		};
-		const GH = {
-			raw:  p => 'https://raw.githubusercontent.com/' + CONFIG.repo + '/' + CONFIG.tak + '/' + p,
-			blob: p => 'https://github.com/' + CONFIG.repo + '/blob/' + CONFIG.tak + '/' + p,
-			api:  p => 'https://api.github.com/repos/' + CONFIG.repo + '/commits?path=' +
-				encodeURIComponent(p) + '&sha=' + CONFIG.tak + '&per_page=1'
-		};
-		const PAD = {
-			hoofdlijst: CONFIG.map + '/omgevingsanalyselijst.md',
-			leveranciers: CONFIG.map + '/' + CONFIG.leveranciersMap
-		};
+    <script>
+            // ───────────────────────── configuratie ─────────────────────────
+            const CONFIG = {
+                repo: 'minimum-information-models/miniGIM',
+                tak: 'main',
+                map: 'Omgevingsanalyselijst',        // map met omgevingsanalyselijst.md
+                leveranciersMap: 'leveranciers'      // submap met index.json en de leveranciersbestanden
+            };
+            const GH = {
+                raw:  p => 'https://raw.githubusercontent.com/' + CONFIG.repo + '/' + CONFIG.tak + '/' + p,
+                blob: p => 'https://github.com/' + CONFIG.repo + '/blob/' + CONFIG.tak + '/' + p,
+                api:  p => 'https://api.github.com/repos/' + CONFIG.repo + '/commits?path=' +
+                    encodeURIComponent(p) + '&sha=' + CONFIG.tak + '&per_page=1'
+            };
+            const PAD = {
+                hoofdlijst: CONFIG.map + '/omgevingsanalyselijst.md',
+                leveranciers: CONFIG.map + '/' + CONFIG.leveranciersMap
+            };
 
-		// Laatste commit van één bestand. Levert null bij een API-limiet of netwerkfout;
-		// de aanroeper valt dan terug op de frontmatter.
-		async function laatsteCommit(pad) {
-			try {
-				const r = await fetch(GH.api(pad));
-				if (!r.ok) { if (r.status === 403 || r.status === 429) API_LIMIET = true; return null; }
-				const j = await r.json();
-				if (!Array.isArray(j) || !j.length) return null;
-				const c = j[0];
-				const iso = c.commit.committer.date || c.commit.author.date;
-				return { sha: c.sha, kort: c.sha.slice(0, 7), iso: iso, datum: datumNl(iso),
-					auteur: (c.commit.author && c.commit.author.name) || '', url: c.html_url };
-			} catch (e) { return null; }
-		}
-		function datumNl(iso) {
-			const d = new Date(iso);
-			if (isNaN(d)) return iso;
-			return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-		}
+            // Laatste commit van één bestand. Levert null bij een API-limiet of netwerkfout;
+            // de aanroeper valt dan terug op de frontmatter.
+            async function laatsteCommit(pad) {
+                try {
+                    const r = await fetch(GH.api(pad));
+                    if (!r.ok) { if (r.status === 403 || r.status === 429) API_LIMIET = true; return null; }
+                    const j = await r.json();
+                    if (!Array.isArray(j) || !j.length) return null;
+                    const c = j[0];
+                    const iso = c.commit.committer.date || c.commit.author.date;
+                    return { sha: c.sha, kort: c.sha.slice(0, 7), iso: iso, datum: datumNl(iso),
+                        auteur: (c.commit.author && c.commit.author.name) || '', url: c.html_url };
+                } catch (e) { return null; }
+            }
+            function datumNl(iso) {
+                const d = new Date(iso);
+                if (isNaN(d)) return iso;
+                return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
 
-		const REMOVE_COL = /minisim\s*\/?\s*bim/i;
-		const TAG_COLS = [/^relevantie$/i, /^risico$/i, /^informatie governer$/i, /^ontsluiter$/i];
+            const REMOVE_COL = /minisim\s*\/?\s*bim/i;
+            const TAG_COLS = [/^relevantie$/i, /^risico$/i, /^informatie governer$/i, /^ontsluiter$/i];
 
-		// ───────────────────────── markdown parsing ─────────────────────────
-		function splitRow(line) {
-			const cells = []; let cur = '';
-			for (let i = 0; i < line.length; i++) {
-				const ch = line[i];
-				if (ch === '\\' && line[i + 1] === '|') { cur += '|'; i++; }
-				else if (ch === '|') { cells.push(cur); cur = ''; }
-				else cur += ch;
-			}
-			cells.push(cur);
-			if (cells.length && cells[0].trim() === '') cells.shift();
-			if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
-			return cells.map(c => c.trim());
-		}
-		const isSeparator = s => s.includes('-') && /^\|[\s|:-]*$/.test(s);
+            // ───────────────────────── markdown parsing ─────────────────────────
+            function splitRow(line) {
+                const cells = []; let cur = '';
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (ch === '\\' && line[i + 1] === '|') { cur += '|'; i++; }
+                    else if (ch === '|') { cells.push(cur); cur = ''; }
+                    else cur += ch;
+                }
+                cells.push(cur);
+                if (cells.length && cells[0].trim() === '') cells.shift();
+                if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+                return cells.map(c => c.trim());
+            }
+            const isSeparator = s => s.includes('-') && /^\|[\s|:-]*$/.test(s);
 
-		function parseHoofdlijst(md) {
-			const lines = md.split(/\r?\n/).filter(l => l.trim().startsWith('|'));
-			if (lines.length < 2) throw new Error('Geen tabel gevonden in het markdown-bestand.');
+            function parseHoofdlijst(md) {
+                const lines = md.split(/\r?\n/).filter(l => l.trim().startsWith('|'));
+                if (lines.length < 2) throw new Error('Geen tabel gevonden in het markdown-bestand.');
 
-			let headers = splitRow(lines[0]).map(h => h.replace(/^_+|_+$/g, '').trim());
-			while (headers.length && headers[headers.length - 1] === '') headers.pop();
-			const seen = {};
-			headers = headers.map(h => { seen[h] = (seen[h] || 0) + 1; return seen[h] > 1 ? h + ' (' + seen[h] + ')' : h; });
-			const rawWidth = headers.length;
+                let headers = splitRow(lines[0]).map(h => h.replace(/^_+|_+$/g, '').trim());
+                while (headers.length && headers[headers.length - 1] === '') headers.pop();
+                const seen = {};
+                headers = headers.map(h => { seen[h] = (seen[h] || 0) + 1; return seen[h] > 1 ? h + ' (' + seen[h] + ')' : h; });
+                const rawWidth = headers.length;
 
-			const idIdx = headers.findIndex(h => /^id$/i.test(h));
-			if (idIdx === -1) throw new Error('de hoofdlijst heeft geen ID-kolom; die is de koppelsleutel met de leveranciersbestanden');
+                const idIdx = headers.findIndex(h => /^id$/i.test(h));
+                if (idIdx === -1) throw new Error('de hoofdlijst heeft geen ID-kolom; die is de koppelsleutel met de leveranciersbestanden');
 
-			// ID- en MiniSIM-kolom niet tonen, wel gebruiken
-			const drop = [idIdx, headers.findIndex(h => REMOVE_COL.test(h))].filter(i => i !== -1).sort((a, b) => b - a);
-			const displayHeaders = headers.slice();
-			drop.forEach(i => displayHeaders.splice(i, 1));
+                // ID- en MiniSIM-kolom niet tonen, wel gebruiken
+                const drop = [idIdx, headers.findIndex(h => REMOVE_COL.test(h))].filter(i => i !== -1).sort((a, b) => b - a);
+                const displayHeaders = headers.slice();
+                drop.forEach(i => displayHeaders.splice(i, 1));
 
-			const modules = [];
-			const zonderId = [];
-			let current = null;
-			for (let i = 1; i < lines.length; i++) {
-				const s = lines[i].trim();
-				if (isSeparator(s)) continue;
-				let cells = splitRow(s);
-				if (!cells.length || cells.every(c => c === '')) continue;
-				while (cells.length < rawWidth) cells.push('');
-				cells = cells.slice(0, rawWidth);
+                const modules = [];
+                const zonderId = [];
+                let current = null;
+                for (let i = 1; i < lines.length; i++) {
+                    const s = lines[i].trim();
+                    if (isSeparator(s)) continue;
+                    let cells = splitRow(s);
+                    if (!cells.length || cells.every(c => c === '')) continue;
+                    while (cells.length < rawWidth) cells.push('');
+                    cells = cells.slice(0, rawWidth);
 
-				const nameIdx = idIdx === 0 ? 1 : 0;
-				const mod = (cells[nameIdx] || '').match(/^\*\*\s*Module\s*:?\s*(.+?)\s*\*\*$/i);
-				if (mod) { current = { name: mod[1], rows: [] }; modules.push(current); continue; }
-				if (!current) { current = { name: 'Algemeen', rows: [] }; modules.push(current); }
+                    const nameIdx = idIdx === 0 ? 1 : 0;
+                    const mod = (cells[nameIdx] || '').match(/^\*\*\s*Module\s*:?\s*(.+?)\s*\*\*$/i);
+                    if (mod) { current = { name: mod[1], rows: [] }; modules.push(current); continue; }
+                    if (!current) { current = { name: 'Algemeen', rows: [] }; modules.push(current); }
 
-				const id = (cells[idIdx] || '').trim().toUpperCase();
-				const display = cells.slice();
-				drop.forEach(i => display.splice(i, 1));
-				if (!/^[A-Z]{2,4}-\d{2,3}$/.test(id)) { zonderId.push(display[0] || '(naamloos)'); continue; }
-				current.rows.push({ id: id, module: current.name, cells: display });
-			}
-			return { headers: displayHeaders, modules: modules, zonderId: zonderId };
-		}
+                    const id = (cells[idIdx] || '').trim().toUpperCase();
+                    const display = cells.slice();
+                    drop.forEach(i => display.splice(i, 1));
+                    if (!/^[A-Z]{2,4}-\d{2,3}$/.test(id)) { zonderId.push(display[0] || '(naamloos)'); continue; }
+                    current.rows.push({ id: id, module: current.name, cells: display });
+                }
+                return { headers: displayHeaders, modules: modules, zonderId: zonderId };
+            }
 
-		function parseLeverancier(md, fallbackId) {
-			const meta = {};
-			const fm = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-			let body = md;
-			if (fm) {
-				body = md.slice(fm[0].length);
-				fm[1].split(/\r?\n/).forEach(l => {
-					const m = l.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
-					if (m) meta[m[1]] = m[2].trim().replace(/^["']|["']$/g, '');
-				});
-			}
-			const lines = body.split(/\r?\n/).filter(l => l.trim().startsWith('|'));
-			const docs = new Map();
-			const dubbel = [], leeg = [], ongeldig = [];
-			let cols = null;
-			lines.forEach(l => {
-				const s = l.trim();
-				if (isSeparator(s)) return;
-				const cells = splitRow(s);
-				if (!cells.length) return;
-				if (!cols) {
-					const norm = cells.map(c => c.replace(/^_+|_+$/g, '').trim().toLowerCase());
-					cols = { id: norm.indexOf('id'), uitleg: norm.indexOf('uitleg'), doc: norm.indexOf('documentatie') };
-					if (cols.id === -1) cols.id = 0;
-					if (cols.uitleg === -1) cols.uitleg = 2;
-					return;
-				}
-				const id = (cells[cols.id] || '').trim().toUpperCase();
-				if (!/^[A-Z]{2,4}-\d{2,3}$/.test(id)) { if (id) ongeldig.push(id); return; }
-				const uitleg = (cells[cols.uitleg] || '').trim();
-				if (docs.has(id)) { dubbel.push(id); return; }   // eerste regel wint; de controle meldt de dubbeling
-				if (!uitleg) leeg.push(id);
-				docs.set(id, { uitleg: uitleg, doc: cols.doc >= 0 ? (cells[cols.doc] || '').trim() : '' });
-			});
-			// 'versie' en 'bijgewerkt' komen uit de git-historie en zijn hier optioneel
-			const ontbrekend = ['naam', 'leverancier'].filter(k => !meta[k]);
-			return {
-				dubbel: dubbel, leeg: leeg, ongeldig: ongeldig, ontbrekend: ontbrekend,
-				id: fallbackId,
-				naam: meta.naam || fallbackId,
-				kort: meta.korte_naam || meta.naam || fallbackId,
-				leverancier: meta.leverancier || '',
-				versie: meta.versie || '',
-				website: meta.website || '',
-				contact: meta.contact || '',
-				kleur: meta.kleur || '#64748b',
-				bijgewerkt: meta.bijgewerkt || '',
-				bestand: '',
-				docs: docs
-			};
-		}
+            function parseLeverancier(md, fallbackId) {
+                const meta = {};
+                const fm = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                let body = md;
+                if (fm) {
+                    body = md.slice(fm[0].length);
+                    fm[1].split(/\r?\n/).forEach(l => {
+                        const m = l.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
+                        if (m) meta[m[1]] = m[2].trim().replace(/^["']|["']$/g, '');
+                    });
+                }
+                const lines = body.split(/\r?\n/).filter(l => l.trim().startsWith('|'));
+                const docs = new Map();
+                const dubbel = [], leeg = [], ongeldig = [];
+                let cols = null;
+                lines.forEach(l => {
+                    const s = l.trim();
+                    if (isSeparator(s)) return;
+                    const cells = splitRow(s);
+                    if (!cells.length) return;
+                    if (!cols) {
+                        const norm = cells.map(c => c.replace(/^_+|_+$/g, '').trim().toLowerCase());
+                        cols = { id: norm.indexOf('id'), uitleg: norm.indexOf('uitleg'), doc: norm.indexOf('documentatie') };
+                        if (cols.id === -1) cols.id = 0;
+                        if (cols.uitleg === -1) cols.uitleg = 2;
+                        return;
+                    }
+                    const id = (cells[cols.id] || '').trim().toUpperCase();
+                    if (!/^[A-Z]{2,4}-\d{2,3}$/.test(id)) { if (id) ongeldig.push(id); return; }
+                    const uitleg = (cells[cols.uitleg] || '').trim();
+                    if (docs.has(id)) { dubbel.push(id); return; }   // eerste regel wint; de controle meldt de dubbeling
+                    if (!uitleg) leeg.push(id);
+                    docs.set(id, { uitleg: uitleg, doc: cols.doc >= 0 ? (cells[cols.doc] || '').trim() : '' });
+                });
+                // 'versie' en 'bijgewerkt' komen uit de git-historie en zijn hier optioneel
+                const ontbrekend = ['naam', 'leverancier'].filter(k => !meta[k]);
+                return {
+                    dubbel: dubbel, leeg: leeg, ongeldig: ongeldig, ontbrekend: ontbrekend,
+                    id: fallbackId,
+                    naam: meta.naam || fallbackId,
+                    kort: meta.korte_naam || meta.naam || fallbackId,
+                    leverancier: meta.leverancier || '',
+                    versie: meta.versie || '',
+                    website: meta.website || '',
+                    contact: meta.contact || '',
+                    kleur: meta.kleur || '#64748b',
+                    bijgewerkt: meta.bijgewerkt || '',
+                    bestand: '',
+                    docs: docs
+                };
+            }
 
-		// ───────────────────────── veilige HTML ─────────────────────────
-		const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-		function inlineMd(s) {
-			let h = esc(s);
-			h = h.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
-			h = h.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-			h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-			h = h.replace(/(^|\s)_([^_]+)_(?=\s|[.,;:!?)]|$)/g, '$1<em>$2</em>');
-			h = h.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, (m, pre, url) =>
-				pre + '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>');
-			return h;
-		}
-		function highlight(html, q) {
-			if (!q) return html;
-			const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![^<]*>)', 'gi');
-			return html.replace(re, '<mark>$1</mark>');
-		}
+            // ───────────────────────── veilige HTML ─────────────────────────
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            function inlineMd(s) {
+                let h = esc(s);
+                h = h.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+                h = h.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                h = h.replace(/(^|\s)_([^_]+)_(?=\s|[.,;:!?)]|$)/g, '$1<em>$2</em>');
+                h = h.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, (m, pre, url) =>
+                    pre + '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>');
+                return h;
+            }
+            function highlight(html, q) {
+                if (!q) return html;
+                const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![^<]*>)', 'gi');
+                return html.replace(re, '<mark>$1</mark>');
+            }
 
-		// ───────────────────────── status ─────────────────────────
-		let DATA = null;
-		let TOOLS = [];
-		let tagCols = [];
-		let LAADFOUTEN = [];              // bestanden die niet geladen konden worden
-		let HOOFDLIJST_COMMIT = null;     // laatste commit van omgevingsanalyselijst.md
-		let API_LIMIET = false;           // GitHub-API gaf een rate limit terug
-		const filters = new Map();        // kolomindex -> Set(tagwaarden, lowercase)
-		const toolFilter = new Set();     // tool-id's
-		const openRows = new Map();       // rij-id -> tool-id die is opengeklapt ('*' = alles)
-		let view = 'lijst';
-		const $ = id => document.getElementById(id);
+            // ───────────────────────── status ─────────────────────────
+            let DATA = null;
+            let TOOLS = [];
+            let tagCols = [];
+            let LAADFOUTEN = [];              // bestanden die niet geladen konden worden
+            let HOOFDLIJST_COMMIT = null;     // laatste commit van omgevingsanalyselijst.md
+            let API_LIMIET = false;           // GitHub-API gaf een rate limit terug
+            const filters = new Map();        // kolomindex -> Set(tagwaarden, lowercase)
+            const toolFilter = new Set();     // tool-id's
+            const openRows = new Map();       // rij-id -> tool-id die is opengeklapt ('*' = alles)
+            let view = 'lijst';
+            const $ = id => document.getElementById(id);
 
-		function cellTags(cell) {
-			const parts = [];
-			cell.split(/,|<br\s*\/?>/i).forEach(p => {
-				if (/https?:\/\//i.test(p)) { parts.push(p); return; }
-				p.split('/').forEach(x => parts.push(x));
-			});
-			const tags = parts.map(t => t.trim().replace(/^(en|of)\s+/i, '').replace(/\s+(en|of)$/i, '').trim()).filter(Boolean);
-			return [...new Set(tags)];
-		}
-		function riskClass(colIdx, val) {
-			if (!/^risico$/i.test(DATA.headers[colIdx])) return '';
-			const s = val.toLowerCase();
-			if (s.startsWith('hoog')) return ' risk-hoog';
-			if (s.startsWith('midden') || s.startsWith('middel')) return ' risk-midden';
-			if (s.startsWith('laag')) return ' risk-laag';
-			return '';
-		}
-		const toolsFor = id => TOOLS.filter(t => t.docs.has(id));
+            function cellTags(cell) {
+                const parts = [];
+                cell.split(/,|<br\s*\/?>/i).forEach(p => {
+                    if (/https?:\/\//i.test(p)) { parts.push(p); return; }
+                    p.split('/').forEach(x => parts.push(x));
+                });
+                const tags = parts.map(t => t.trim().replace(/^(en|of)\s+/i, '').replace(/\s+(en|of)$/i, '').trim()).filter(Boolean);
+                return [...new Set(tags)];
+            }
+            function riskClass(colIdx, val) {
+                if (!/^risico$/i.test(DATA.headers[colIdx])) return '';
+                const s = val.toLowerCase();
+                if (s.startsWith('hoog')) return ' risk-hoog';
+                if (s.startsWith('midden') || s.startsWith('middel')) return ' risk-midden';
+                if (s.startsWith('laag')) return ' risk-laag';
+                return '';
+            }
+            const toolsFor = id => TOOLS.filter(t => t.docs.has(id));
 
-		function rowMatches(row, q) {
-			for (const [col, vals] of filters) {
-				const tags = cellTags(row.cells[col] || '').map(t => t.toLowerCase());
-				if (![...vals].some(v => tags.includes(v))) return false;
-			}
-			if (toolFilter.size && !TOOLS.some(t => toolFilter.has(t.id) && t.docs.has(row.id))) return false;
-			if (q) {
-				const inCells = row.cells.some(c => c.toLowerCase().includes(q));
-				const inDocs = toolsFor(row.id).some(t => {
-					const d = t.docs.get(row.id);
-					return (d.uitleg + ' ' + d.doc + ' ' + t.naam).toLowerCase().includes(q);
-				});
-				if (!inCells && !inDocs && !row.id.toLowerCase().includes(q)) return false;
-			}
-			return true;
-		}
+            function rowMatches(row, q) {
+                for (const [col, vals] of filters) {
+                    const tags = cellTags(row.cells[col] || '').map(t => t.toLowerCase());
+                    if (![...vals].some(v => tags.includes(v))) return false;
+                }
+                if (toolFilter.size && !TOOLS.some(t => toolFilter.has(t.id) && t.docs.has(row.id))) return false;
+                if (q) {
+                    const inCells = row.cells.some(c => c.toLowerCase().includes(q));
+                    const inDocs = toolsFor(row.id).some(t => {
+                        const d = t.docs.get(row.id);
+                        return (d.uitleg + ' ' + d.doc + ' ' + t.naam).toLowerCase().includes(q);
+                    });
+                    if (!inCells && !inDocs && !row.id.toLowerCase().includes(q)) return false;
+                }
+                return true;
+            }
 
-		// ───────────────────────── kolombreedtes ─────────────────────────
-		const WIDTH_MAP = [
-			{ re: /^onderdeel$/i, w: 13 }, { re: /^toelichting$/i, w: 18 }, { re: /^relevantie$/i, w: 7 },
-			{ re: /^risico$/i, w: 7 }, { re: /^databron/i, w: 11 }, { re: /^toelichting \(2\)$/i, w: 13 },
-			{ re: /^informatie governer$/i, w: 8 }, { re: /^ontsluiter$/i, w: 8 }, { re: /^documentatie$/i, w: 15 }
-		];
-		function colgroup(cols) {
-			let widths = cols.map(h => { const m = WIDTH_MAP.find(x => x.re.test(h)); return m ? m.w : 0; });
-			const assigned = widths.reduce((a, b) => a + b, 0), missing = widths.filter(w => !w).length;
-			if (missing) { const each = Math.max(5, (100 - assigned) / missing); widths = widths.map(w => w || each); }
-			const total = widths.reduce((a, b) => a + b, 0);
-			return '<colgroup>' + widths.map(w => '<col style="width:' + (w / total * 100).toFixed(2) + '%">').join('') + '</colgroup>';
-		}
+            // ───────────────────────── kolombreedtes ─────────────────────────
+            const WIDTH_MAP = [
+                { re: /^onderdeel$/i, w: 13 }, { re: /^toelichting$/i, w: 18 }, { re: /^relevantie$/i, w: 7 },
+                { re: /^risico$/i, w: 7 }, { re: /^databron/i, w: 11 }, { re: /^toelichting \(2\)$/i, w: 13 },
+                { re: /^informatie governer$/i, w: 8 }, { re: /^ontsluiter$/i, w: 8 }, { re: /^documentatie$/i, w: 15 }
+            ];
+            function colgroup(cols) {
+                let widths = cols.map(h => { const m = WIDTH_MAP.find(x => x.re.test(h)); return m ? m.w : 0; });
+                const assigned = widths.reduce((a, b) => a + b, 0), missing = widths.filter(w => !w).length;
+                if (missing) { const each = Math.max(5, (100 - assigned) / missing); widths = widths.map(w => w || each); }
+                const total = widths.reduce((a, b) => a + b, 0);
+                return '<colgroup>' + widths.map(w => '<col style="width:' + (w / total * 100).toFixed(2) + '%">').join('') + '</colgroup>';
+            }
 
-		// ───────────────────────── weergave: onderdelen ─────────────────────────
-		function renderCell(cell, colIdx, q) {
-			if (!tagCols.includes(colIdx)) return highlight(inlineMd(cell), q);
-			return cellTags(cell).map(t => {
-				const active = filters.has(colIdx) && filters.get(colIdx).has(t.toLowerCase());
-				return '<button type="button" class="tag' + riskClass(colIdx, t) + (active ? ' active' : '') +
-					'" data-col="' + colIdx + '" data-val="' + esc(t) + '">' + highlight(esc(t), q) + '</button>';
-			}).join(' ');
-		}
-		function renderDocCell(row) {
-			const ts = toolsFor(row.id);
-			if (!ts.length) return '<span class="nodoc">nog geen documentatie</span>';
-			const open = openRows.get(row.id);
-			return ts.map(t => {
-				const isOpen = open === '*' || open === t.id;
-				return '<button type="button" class="docbadge' + (isOpen ? ' open' : '') +
-					'" data-row="' + esc(row.id) + '" data-tool="' + esc(t.id) + '"' +
-					' style="border-color:' + esc(t.kleur) + (isOpen ? ';background:' + esc(t.kleur) : ';color:' + esc(t.kleur)) + '">' +
-					'<span class="dot" style="background:' + esc(t.kleur) + '"></span>' + esc(t.kort) + '</button>';
-			}).join(' ');
-		}
-		// Versie en datum komen uit de git-historie van het bestand; beide verwijzen
-		// naar de bron op GitHub. Zonder commitgegevens valt dit terug op de frontmatter.
-		function herkomst(t) {
-			const v = t.commit
-				? '<a class="meta" href="' + esc(t.commit.url) + '" target="_blank" rel="noopener" title="commit ' +
-				esc(t.commit.sha) + (t.commit.auteur ? ' door ' + esc(t.commit.auteur) : '') + '">versie ' + esc(t.versie) + '</a>'
-				: (t.versie ? '<span class="meta">versie ' + esc(t.versie) + '</span>' : '');
-			const d = t.bijgewerkt
-				? '<span class="meta"' + (t.bijgewerktIso ? ' title="' + esc(t.bijgewerktIso) + '"' : '') + '>bijgewerkt ' + esc(t.bijgewerkt) + '</span>'
-				: '';
-			const b = t.bron ? '<a class="meta" href="' + esc(t.bron) + '" target="_blank" rel="noopener">bron op GitHub</a>' : '';
-			return v + d + b;
-		}
+            // ───────────────────────── weergave: onderdelen ─────────────────────────
+            function renderCell(cell, colIdx, q) {
+                if (!tagCols.includes(colIdx)) return highlight(inlineMd(cell), q);
+                return cellTags(cell).map(t => {
+                    const active = filters.has(colIdx) && filters.get(colIdx).has(t.toLowerCase());
+                    return '<button type="button" class="tag' + riskClass(colIdx, t) + (active ? ' active' : '') +
+                        '" data-col="' + colIdx + '" data-val="' + esc(t) + '">' + highlight(esc(t), q) + '</button>';
+                }).join(' ');
+            }
+            function renderDocCell(row) {
+                const ts = toolsFor(row.id);
+                if (!ts.length) return '<span class="nodoc">nog geen documentatie</span>';
+                const open = openRows.get(row.id);
+                return ts.map(t => {
+                    const isOpen = open === '*' || open === t.id;
+                    return '<button type="button" class="docbadge' + (isOpen ? ' open' : '') +
+                        '" data-row="' + esc(row.id) + '" data-tool="' + esc(t.id) + '"' +
+                        ' style="border-color:' + esc(t.kleur) + (isOpen ? ';background:' + esc(t.kleur) : ';color:' + esc(t.kleur)) + '">' +
+                        '<span class="dot" style="background:' + esc(t.kleur) + '"></span>' + esc(t.kort) + '</button>';
+                }).join(' ');
+            }
+            // Versie en datum komen uit de git-historie van het bestand; beide verwijzen
+            // naar de bron op GitHub. Zonder commitgegevens valt dit terug op de frontmatter.
+            function herkomst(t) {
+                const v = t.commit
+                    ? '<a class="meta" href="' + esc(t.commit.url) + '" target="_blank" rel="noopener" title="commit ' +
+                    esc(t.commit.sha) + (t.commit.auteur ? ' door ' + esc(t.commit.auteur) : '') + '">versie ' + esc(t.versie) + '</a>'
+                    : (t.versie ? '<span class="meta">versie ' + esc(t.versie) + '</span>' : '');
+                const d = t.bijgewerkt
+                    ? '<span class="meta"' + (t.bijgewerktIso ? ' title="' + esc(t.bijgewerktIso) + '"' : '') + '>bijgewerkt ' + esc(t.bijgewerkt) + '</span>'
+                    : '';
+                const b = t.bron ? '<a class="meta" href="' + esc(t.bron) + '" target="_blank" rel="noopener">bron op GitHub</a>' : '';
+                return v + d + b;
+            }
 
-		function renderDetail(row, span, q) {
-			const open = openRows.get(row.id);
-			const ts = toolsFor(row.id).filter(t => open === '*' || open === t.id);
-			if (!ts.length) return '';
-			const cards = ts.map(t => {
-				const d = t.docs.get(row.id);
-				return '<div class="doccard" style="border-color:' + esc(t.kleur) + '">' +
-					'<h4>' + esc(t.naam) + herkomst(t) + '</h4>' +
-					'<p>' + highlight(inlineMd(d.uitleg), q) + '</p>' +
-					(d.doc ? '<div class="lnk">' + inlineMd(d.doc) + '</div>' : '') +
-					'</div>';
-			}).join('');
-			return '<tr class="detail"><td colspan="' + span + '"><div class="docpanel">' + cards + '</div></td></tr>';
-		}
+            function renderDetail(row, span, q) {
+                const open = openRows.get(row.id);
+                const ts = toolsFor(row.id).filter(t => open === '*' || open === t.id);
+                if (!ts.length) return '';
+                const cards = ts.map(t => {
+                    const d = t.docs.get(row.id);
+                    return '<div class="doccard" style="border-color:' + esc(t.kleur) + '">' +
+                        '<h4>' + esc(t.naam) + herkomst(t) + '</h4>' +
+                        '<p>' + highlight(inlineMd(d.uitleg), q) + '</p>' +
+                        (d.doc ? '<div class="lnk">' + inlineMd(d.doc) + '</div>' : '') +
+                        '</div>';
+                }).join('');
+                return '<tr class="detail"><td colspan="' + span + '"><div class="docpanel">' + cards + '</div></td></tr>';
+            }
 
-		function renderLijst(q) {
-			const root = $('content');
-			root.innerHTML = '';
-			const cols = DATA.headers.concat(['Documentatie']);
-			const span = cols.length;
-			let shown = 0, total = 0;
+            function renderLijst(q) {
+                const root = $('content');
+                root.innerHTML = '';
+                const cols = DATA.headers.concat(['Documentatie']);
+                const span = cols.length;
+                let shown = 0, total = 0;
 
-			DATA.modules.forEach(mod => {
-				total += mod.rows.length;
-				const rows = mod.rows.filter(r => rowMatches(r, q));
-				shown += rows.length;
-				if (!rows.length) return;
+                DATA.modules.forEach(mod => {
+                    total += mod.rows.length;
+                    const rows = mod.rows.filter(r => rowMatches(r, q));
+                    shown += rows.length;
+                    if (!rows.length) return;
 
-				const sec = document.createElement('section');
-				sec.className = 'module';
-				const ths = cols.map(h => '<th>' + esc(h) + '</th>').join('');
-				const trs = rows.map(r => {
-					const tds = r.cells.map((c, i) =>
-						i === 0
-							? '<td class="ond">' + highlight(inlineMd(c), q) + '<span class="rid">' + esc(r.id) + '</span></td>'
-							: '<td>' + renderCell(c, i, q) + '</td>'
-					).join('');
-					return '<tr>' + tds + '<td>' + renderDocCell(r) + '</td></tr>' + renderDetail(r, span, q);
-				}).join('');
-				sec.innerHTML = '<h2>' + esc(mod.name) + ' <span class="n">(' + rows.length + ' item' + (rows.length === 1 ? '' : 's') + ')</span></h2>' +
-					'<div class="tbl-wrap"><table>' + colgroup(cols) + '<thead><tr>' + ths + '</tr></thead><tbody>' + trs + '</tbody></table></div>';
-				root.appendChild(sec);
-			});
+                    const sec = document.createElement('section');
+                    sec.className = 'module';
+                    const ths = cols.map(h => '<th>' + esc(h) + '</th>').join('');
+                    const trs = rows.map(r => {
+                        const tds = r.cells.map((c, i) =>
+                            i === 0
+                                ? '<td class="ond">' + highlight(inlineMd(c), q) + '<span class="rid">' + esc(r.id) + '</span></td>'
+                                : '<td>' + renderCell(c, i, q) + '</td>'
+                        ).join('');
+                        return '<tr>' + tds + '<td>' + renderDocCell(r) + '</td></tr>' + renderDetail(r, span, q);
+                    }).join('');
+                    sec.innerHTML = '<h2>' + esc(mod.name) + '<span class="n">' + rows.length + ' item' + (rows.length === 1 ? '' : 's') + '</span></h2>' +
+                        '<div class="tbl-wrap"><table>' + colgroup(cols) + '<thead><tr>' + ths + '</tr></thead><tbody>' + trs + '</tbody></table></div>';
+                    root.appendChild(sec);
+                });
 
-			$('count').textContent = (q || filters.size || toolFilter.size) ? shown + ' van ' + total + ' items' : total + ' items';
-			if (!root.children.length) root.innerHTML = '<div id="status">Geen resultaten voor de huidige zoekopdracht of filters.</div>';
-		}
+                $('count').textContent = (q || filters.size || toolFilter.size) ? shown + ' van ' + total + ' items' : total + ' items';
+                if (!root.children.length) root.innerHTML = '<div id="status">Geen resultaten voor de huidige zoekopdracht of filters.</div>';
+            }
 
-		// ───────────────────────── weergave: softwaretools ─────────────────────────
-		function renderTools(q) {
-			const root = $('content');
-			const alleIds = new Set();
-			DATA.modules.forEach(m => m.rows.forEach(r => alleIds.add(r.id)));
-			const totaal = alleIds.size;
+            // ───────────────────────── weergave: softwaretools ─────────────────────────
+            function renderTools(q) {
+                const root = $('content');
+                const alleIds = new Set();
+                DATA.modules.forEach(m => m.rows.forEach(r => alleIds.add(r.id)));
+                const totaal = alleIds.size;
 
-			const cards = TOOLS.map(t => {
-				const geldig = [...t.docs.keys()].filter(id => alleIds.has(id));
-				const onbekend = [...t.docs.keys()].filter(id => !alleIds.has(id));
-				const pct = totaal ? Math.round(geldig.length / totaal * 100) : 0;
-				const perModule = {};
-				DATA.modules.forEach(m => {
-					const n = m.rows.filter(r => t.docs.has(r.id)).length;
-					if (n) perModule[m.name] = n;
-				});
-				const actief = toolFilter.has(t.id);
-				return '<div class="toolcard">' +
-					'<h3><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + esc(t.kleur) + '"></span>' + highlight(esc(t.naam), q) + '</h3>' +
-					'<p class="vend">' + esc([t.leverancier, t.versie ? 'versie ' + t.versie : ''].filter(Boolean).join(' · ')) + '</p>' +
-					'<div class="bar"><span style="width:' + pct + '%;background:' + esc(t.kleur) + '"></span></div>' +
-					'<div style="font-size:13px;color:var(--muted)">' + geldig.length + ' van ' + totaal + ' onderdelen gedocumenteerd (' + pct + '%)</div>' +
-					'<div class="modchips">' + Object.keys(perModule).map(m => '<span class="modchip">' + esc(m) + ' ' + perModule[m] + '</span>').join('') + '</div>' +
-					'<dl>' +
-					(t.bijgewerkt ? '<dt>Bijgewerkt</dt><dd' + (t.bijgewerktIso ? ' title="' + esc(t.bijgewerktIso) + '"' : '') + '>' +
-						esc(t.bijgewerkt) + (t.commit && t.commit.auteur ? ' <span style="color:var(--muted)">door ' + esc(t.commit.auteur) + '</span>' : '') + '</dd>' : '') +
-					(t.commit ? '<dt>Versie</dt><dd><a href="' + esc(t.commit.url) + '" target="_blank" rel="noopener"><code>' +
-						esc(t.versie) + '</code></a></dd>'
-						: (t.versie ? '<dt>Versie</dt><dd>' + esc(t.versie) + '</dd>' : '')) +
-					(t.website ? '<dt>Website</dt><dd><a href="' + esc(t.website) + '" target="_blank" rel="noopener">' + esc(t.website.replace(/^https?:\/\//, '')) + '</a></dd>' : '') +
-					(t.contact ? '<dt>Contact</dt><dd>' + esc(t.contact) + '</dd>' : '') +
-					'<dt>Bestand</dt><dd>' + (t.bron ? '<a href="' + esc(t.bron) + '" target="_blank" rel="noopener"><code>' + esc(t.bestand) + '</code></a>'
-						: '<code>' + esc(t.bestand) + '</code>') + '</dd>' +
-					'</dl>' +
-					(onbekend.length ? '<div class="warn">' + onbekend.length + ' ID' + (onbekend.length === 1 ? '' : 's') + ' onbekend in de hoofdlijst: ' + esc(onbekend.join(', ')) + '</div>' : '') +
-					'<div style="margin-top:12px"><button type="button" class="toolbtn' + (actief ? ' on' : '') + '" data-tool="' + esc(t.id) + '"' +
-					(actief ? ' style="background:' + esc(t.kleur) + ';border-color:' + esc(t.kleur) + '"' : '') + '>' +
-					(actief ? '✓ gefilterd op deze tool' : 'filter de lijst op deze tool') + '</button></div>' +
-					'</div>';
-			}).join('');
+                const cards = TOOLS.map(t => {
+                    const geldig = [...t.docs.keys()].filter(id => alleIds.has(id));
+                    const onbekend = [...t.docs.keys()].filter(id => !alleIds.has(id));
+                    const pct = totaal ? Math.round(geldig.length / totaal * 100) : 0;
+                    const perModule = {};
+                    DATA.modules.forEach(m => {
+                        const n = m.rows.filter(r => t.docs.has(r.id)).length;
+                        if (n) perModule[m.name] = n;
+                    });
+                    const actief = toolFilter.has(t.id);
+                    return '<div class="toolcard">' +
+                        '<h3><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + esc(t.kleur) + '"></span>' + highlight(esc(t.naam), q) + '</h3>' +
+                        '<p class="vend">' + esc([t.leverancier, t.versie ? 'versie ' + t.versie : ''].filter(Boolean).join(' · ')) + '</p>' +
+                        '<div class="bar"><span style="width:' + pct + '%;background:' + esc(t.kleur) + '"></span></div>' +
+                        '<div style="font-size:13px;color:var(--muted)">' + geldig.length + ' van ' + totaal + ' onderdelen gedocumenteerd (' + pct + '%)</div>' +
+                        '<div class="modchips">' + Object.keys(perModule).map(m => '<span class="modchip">' + esc(m) + ' ' + perModule[m] + '</span>').join('') + '</div>' +
+                        '<dl>' +
+                        (t.bijgewerkt ? '<dt>Bijgewerkt</dt><dd' + (t.bijgewerktIso ? ' title="' + esc(t.bijgewerktIso) + '"' : '') + '>' +
+                            esc(t.bijgewerkt) + (t.commit && t.commit.auteur ? ' <span style="color:var(--muted)">door ' + esc(t.commit.auteur) + '</span>' : '') + '</dd>' : '') +
+                        (t.commit ? '<dt>Versie</dt><dd><a href="' + esc(t.commit.url) + '" target="_blank" rel="noopener"><code>' +
+                            esc(t.versie) + '</code></a></dd>'
+                            : (t.versie ? '<dt>Versie</dt><dd>' + esc(t.versie) + '</dd>' : '')) +
+                        (t.website ? '<dt>Website</dt><dd><a href="' + esc(t.website) + '" target="_blank" rel="noopener">' + esc(t.website.replace(/^https?:\/\//, '')) + '</a></dd>' : '') +
+                        (t.contact ? '<dt>Contact</dt><dd>' + esc(t.contact) + '</dd>' : '') +
+                        '<dt>Bestand</dt><dd>' + (t.bron ? '<a href="' + esc(t.bron) + '" target="_blank" rel="noopener"><code>' + esc(t.bestand) + '</code></a>'
+                            : '<code>' + esc(t.bestand) + '</code>') + '</dd>' +
+                        '</dl>' +
+                        (onbekend.length ? '<div class="warn">' + onbekend.length + ' ID' + (onbekend.length === 1 ? '' : 's') + ' onbekend in de hoofdlijst: ' + esc(onbekend.join(', ')) + '</div>' : '') +
+                        '<div style="margin-top:12px"><button type="button" class="toolbtn' + (actief ? ' on' : '') + '" data-tool="' + esc(t.id) + '"' +
+                        (actief ? ' style="background:' + esc(t.kleur) + ';border-color:' + esc(t.kleur) + '"' : '') + '>' +
+                        (actief ? '✓ gefilterd op deze tool' : 'filter de lijst op deze tool') + '</button></div>' +
+                        '</div>';
+                }).join('');
 
-			root.innerHTML = TOOLS.length
-				? '<div class="grid">' + cards + '</div>'
-				: '<div id="status">Geen leveranciersbestanden gevonden.</div>';
-			$('count').textContent = TOOLS.length + ' tool' + (TOOLS.length === 1 ? '' : 's');
-		}
+                root.innerHTML = TOOLS.length
+                    ? '<div class="grid">' + cards + '</div>'
+                    : '<div id="status">Geen leveranciersbestanden gevonden.</div>';
+                $('count').textContent = TOOLS.length + ' tool' + (TOOLS.length === 1 ? '' : 's');
+            }
 
-		// ───────────────────────── weergave: controle & export ─────────────────────────
-		function res(status, tekst, detail) {
-			const ico = status === 'ok' ? '✓' : status === 'bad' ? '✕' : '!';
-			return '<div class="res ' + status + '"><span class="ico">' + ico + '</span><div><div>' + tekst + '</div>' +
-				(detail ? '<div class="det">' + detail + '</div>' : '') + '</div></div>';
-		}
+            // ───────────────────────── weergave: controle & export ─────────────────────────
+            function res(status, tekst, detail) {
+                const ico = status === 'ok' ? '✓' : status === 'bad' ? '✕' : '!';
+                return '<div class="res ' + status + '"><span class="ico">' + ico + '</span><div><div>' + tekst + '</div>' +
+                    (detail ? '<div class="det">' + detail + '</div>' : '') + '</div></div>';
+            }
 
-		function renderControle() {
-			const alleIds = new Map();
-			DATA.modules.forEach(m => m.rows.forEach(r => alleIds.set(r.id, r.cells[0])));
-			const totaal = alleIds.size;
+            function renderControle() {
+                const alleIds = new Map();
+                DATA.modules.forEach(m => m.rows.forEach(r => alleIds.set(r.id, r.cells[0])));
+                const totaal = alleIds.size;
 
-			// ── hoofdlijst
-			let h = '<div class="panel"><h3>Hoofdlijst</h3>' +
-				'<p class="lead">' + totaal + ' onderdelen in ' + DATA.modules.length + ' modules, gekoppeld via de ID-kolom.</p>' +
-				res('ok', 'De hoofdlijst bevat een ID-kolom.', 'Die ID is leidend voor de koppeling met de leveranciersbestanden.') +
-				res('ok', 'Bron: <a href="' + esc(GH.blob(PAD.hoofdlijst)) + '" target="_blank" rel="noopener"><code>' + esc(PAD.hoofdlijst) + '</code></a> op GitHub.',
-					HOOFDLIJST_COMMIT
-						? 'Laatst gewijzigd op ' + esc(HOOFDLIJST_COMMIT.datum) +
-						(HOOFDLIJST_COMMIT.auteur ? ' door ' + esc(HOOFDLIJST_COMMIT.auteur) : '') +
-						' — commit <a href="' + esc(HOOFDLIJST_COMMIT.url) + '" target="_blank" rel="noopener"><code>' + esc(HOOFDLIJST_COMMIT.kort) + '</code></a>'
-						: 'Wijzigingsdatum niet opgehaald.') +
-				(API_LIMIET ? res('tip', 'De GitHub-API gaf een limiet terug.',
-					'Versies en datums vallen dan terug op de frontmatter. De limiet voor niet-ingelogde verzoeken is 60 per uur per IP-adres en loopt vanzelf weer vol.') : '') +
-				((DATA.zonderId && DATA.zonderId.length)
-					? res('bad', DATA.zonderId.length + ' regel(s) zonder geldig ID en dus niet gekoppeld.',
-						DATA.zonderId.map(n => '<code>' + esc(n) + '</code>').join(', '))
-					: '') +
-				'</div>';
+                // ── hoofdlijst
+                let h = '<div class="panel"><h3>Hoofdlijst</h3>' +
+                    '<p class="lead">' + totaal + ' onderdelen in ' + DATA.modules.length + ' modules, gekoppeld via de ID-kolom.</p>' +
+                    res('ok', 'De hoofdlijst bevat een ID-kolom.', 'Die ID is leidend voor de koppeling met de leveranciersbestanden.') +
+                    res('ok', 'Bron: <a href="' + esc(GH.blob(PAD.hoofdlijst)) + '" target="_blank" rel="noopener"><code>' + esc(PAD.hoofdlijst) + '</code></a> op GitHub.',
+                        HOOFDLIJST_COMMIT
+                            ? 'Laatst gewijzigd op ' + esc(HOOFDLIJST_COMMIT.datum) +
+                            (HOOFDLIJST_COMMIT.auteur ? ' door ' + esc(HOOFDLIJST_COMMIT.auteur) : '') +
+                            ' — commit <a href="' + esc(HOOFDLIJST_COMMIT.url) + '" target="_blank" rel="noopener"><code>' + esc(HOOFDLIJST_COMMIT.kort) + '</code></a>'
+                            : 'Wijzigingsdatum niet opgehaald.') +
+                    (API_LIMIET ? res('tip', 'De GitHub-API gaf een limiet terug.',
+                        'Versies en datums vallen dan terug op de frontmatter. De limiet voor niet-ingelogde verzoeken is 60 per uur per IP-adres en loopt vanzelf weer vol.') : '') +
+                    ((DATA.zonderId && DATA.zonderId.length)
+                        ? res('bad', DATA.zonderId.length + ' regel(s) zonder geldig ID en dus niet gekoppeld.',
+                            DATA.zonderId.map(n => '<code>' + esc(n) + '</code>').join(', '))
+                        : '') +
+                    '</div>';
 
-			// ── leveranciersbestanden
-			let l = '<div class="panel"><h3>Leveranciersbestanden</h3>' +
-				'<p class="lead">Zelfde controles als een validatiestap in CI: onbekende of dubbele ID\'s, ontbrekende velden en lege uitleg.</p>';
-			if (LAADFOUTEN.length) LAADFOUTEN.forEach(f => { l += res('bad', 'Kon niet laden: <code>' + esc(f) + '</code>'); });
-			if (!TOOLS.length) l += res('tip', 'Geen leveranciersbestanden geladen.');
-			let foutTotaal = LAADFOUTEN.length;
-			TOOLS.forEach(t => {
-				const onbekend = [...t.docs.keys()].filter(id => !alleIds.has(id));
-				const problemen = [];
-				if (t.ontbrekend.length) problemen.push('ontbrekend frontmatterveld: ' + t.ontbrekend.map(x => '<code>' + x + '</code>').join(', '));
-				if (onbekend.length) problemen.push('ID onbekend in de hoofdlijst: ' + onbekend.map(x => '<code>' + esc(x) + '</code>').join(', '));
-				if (t.dubbel.length) problemen.push('ID komt meer dan één keer voor: ' + t.dubbel.map(x => '<code>' + esc(x) + '</code>').join(', '));
-				if (t.ongeldig.length) problemen.push('geen geldig ID-formaat: ' + t.ongeldig.map(x => '<code>' + esc(x) + '</code>').join(', '));
-				const tips = t.leeg.length ? 'lege uitleg bij ' + t.leeg.map(x => '<code>' + esc(x) + '</code>').join(', ') : '';
-				foutTotaal += problemen.length;
-				l += res(problemen.length ? 'bad' : (tips ? 'tip' : 'ok'),
-					'<strong>' + esc(t.naam) + '</strong> — ' + t.docs.size + ' regel' + (t.docs.size === 1 ? '' : 's') +
-					' <a href="' + esc(t.bron || '#') + '" target="_blank" rel="noopener"><code>' + esc(t.bestand) + '</code></a>' +
-					(t.commit ? ' <span class="det" style="display:inline">' + esc(t.bijgewerkt) + ' · ' + esc(t.versie) + '</span>' : ''),
-					problemen.length ? problemen.join('<br>') : (tips || 'geen problemen gevonden'));
-			});
-			l += '<div style="margin-top:12px;font-weight:600;font-size:13.5px;color:' + (foutTotaal ? '#b42318' : '#17743a') + '">' +
-				(foutTotaal ? foutTotaal + ' probleem/problemen gevonden — deze zouden een CI-controle laten falen.' : 'Alle controles geslaagd.') + '</div></div>';
+                // ── leveranciersbestanden
+                let l = '<div class="panel"><h3>Leveranciersbestanden</h3>' +
+                    '<p class="lead">Zelfde controles als een validatiestap in CI: onbekende of dubbele ID\'s, ontbrekende velden en lege uitleg.</p>';
+                if (LAADFOUTEN.length) LAADFOUTEN.forEach(f => { l += res('bad', 'Kon niet laden: <code>' + esc(f) + '</code>'); });
+                if (!TOOLS.length) l += res('tip', 'Geen leveranciersbestanden geladen.');
+                let foutTotaal = LAADFOUTEN.length;
+                TOOLS.forEach(t => {
+                    const onbekend = [...t.docs.keys()].filter(id => !alleIds.has(id));
+                    const problemen = [];
+                    if (t.ontbrekend.length) problemen.push('ontbrekend frontmatterveld: ' + t.ontbrekend.map(x => '<code>' + x + '</code>').join(', '));
+                    if (onbekend.length) problemen.push('ID onbekend in de hoofdlijst: ' + onbekend.map(x => '<code>' + esc(x) + '</code>').join(', '));
+                    if (t.dubbel.length) problemen.push('ID komt meer dan één keer voor: ' + t.dubbel.map(x => '<code>' + esc(x) + '</code>').join(', '));
+                    if (t.ongeldig.length) problemen.push('geen geldig ID-formaat: ' + t.ongeldig.map(x => '<code>' + esc(x) + '</code>').join(', '));
+                    const tips = t.leeg.length ? 'lege uitleg bij ' + t.leeg.map(x => '<code>' + esc(x) + '</code>').join(', ') : '';
+                    foutTotaal += problemen.length;
+                    l += res(problemen.length ? 'bad' : (tips ? 'tip' : 'ok'),
+                        '<strong>' + esc(t.naam) + '</strong> — ' + t.docs.size + ' regel' + (t.docs.size === 1 ? '' : 's') +
+                        ' <a href="' + esc(t.bron || '#') + '" target="_blank" rel="noopener"><code>' + esc(t.bestand) + '</code></a>' +
+                        (t.commit ? ' <span class="det" style="display:inline">' + esc(t.bijgewerkt) + ' · ' + esc(t.versie) + '</span>' : ''),
+                        problemen.length ? problemen.join('<br>') : (tips || 'geen problemen gevonden'));
+                });
+                l += '<div style="margin-top:12px;font-weight:600;font-size:13.5px;color:' + (foutTotaal ? '#b42318' : '#17743a') + '">' +
+                    (foutTotaal ? foutTotaal + ' probleem/problemen gevonden — deze zouden een CI-controle laten falen.' : 'Alle controles geslaagd.') + '</div></div>';
 
-			// ── dekking
-			const zonder = [...alleIds.entries()].filter(([id]) => !toolsFor(id).length);
-			const dekking = totaal ? Math.round((totaal - zonder.length) / totaal * 100) : 0;
-			let d = '<div class="panel"><h3>Dekking</h3>' +
-				'<p class="lead">' + (totaal - zonder.length) + ' van ' + totaal + ' onderdelen (' + dekking + '%) heeft documentatie van minstens één tool.</p>' +
-				'<div class="bar"><span style="width:' + dekking + '%;background:var(--accent)"></span></div>' +
-				(zonder.length ? '<details class="gaps"><summary>' + zonder.length + ' onderdelen zonder documentatie</summary><ul>' +
-					zonder.map(([id, naam]) => '<li><code>' + esc(id) + '</code> ' + esc(naam) + '</li>').join('') + '</ul></details>' : '') +
-				'</div>';
+                // ── dekking
+                const zonder = [...alleIds.entries()].filter(([id]) => !toolsFor(id).length);
+                const dekking = totaal ? Math.round((totaal - zonder.length) / totaal * 100) : 0;
+                let d = '<div class="panel"><h3>Dekking</h3>' +
+                    '<p class="lead">' + (totaal - zonder.length) + ' van ' + totaal + ' onderdelen (' + dekking + '%) heeft documentatie van minstens één tool.</p>' +
+                    '<div class="bar"><span style="width:' + dekking + '%;background:var(--accent)"></span></div>' +
+                    (zonder.length ? '<details class="gaps"><summary>' + zonder.length + ' onderdelen zonder documentatie</summary><ul>' +
+                        zonder.map(([id, naam]) => '<li><code>' + esc(id) + '</code> ' + esc(naam) + '</li>').join('') + '</ul></details>' : '') +
+                    '</div>';
 
-			$('content').innerHTML = h + l + d;
-			$('count').textContent = totaal + ' onderdelen · ' + TOOLS.length + ' tools';
-		}
+                $('content').innerHTML = h + l + d;
+                $('count').textContent = totaal + ' onderdelen · ' + TOOLS.length + ' tools';
+            }
 
-		// ───────────────────────── kop en filterbalk ─────────────────────────
-		function renderToolPicker() {
-			if (!TOOLS.length) { $('toolpicker').innerHTML = ''; return; }
-			$('toolpicker').innerHTML = '<span class="lbl">Documentatie van</span>' + TOOLS.map(t => {
-				const on = toolFilter.has(t.id);
-				return '<button type="button" class="toolbtn' + (on ? ' on' : '') + '" data-tool="' + esc(t.id) + '"' +
-					(on ? ' style="background:' + esc(t.kleur) + ';border-color:' + esc(t.kleur) + '"' : '') + '>' +
-					'<span class="dot" style="background:' + (on ? '#fff' : esc(t.kleur)) + '"></span>' +
-					esc(t.kort) + ' <span class="num">' + t.docs.size + '</span></button>';
-			}).join('');
-		}
-		function renderFilterBar() {
-			const bar = $('filterbar');
-			if (!filters.size && !toolFilter.size) { bar.classList.remove('on'); return; }
-			bar.classList.add('on');
-			const chips = [];
-			for (const [col, vals] of filters)
-				for (const v of vals)
-					chips.push('<span class="chip" data-col="' + col + '" data-val="' + esc(v) + '" title="Filter verwijderen">' +
-						'<span class="k">' + esc(DATA.headers[col]) + ':</span> ' + esc(v) + ' <span class="x">×</span></span>');
-			TOOLS.filter(t => toolFilter.has(t.id)).forEach(t =>
-				chips.push('<span class="chip" data-tool="' + esc(t.id) + '" title="Filter verwijderen">' +
-					'<span class="k">Tool:</span> ' + esc(t.kort) + ' <span class="x">×</span></span>'));
-			$('chips').innerHTML = chips.join(' ');
-		}
+            // ───────────────────────── kop en filterbalk ─────────────────────────
+            function renderToolPicker() {
+                if (!TOOLS.length) { $('toolpicker').innerHTML = ''; return; }
+                $('toolpicker').innerHTML = '<span class="lbl">Documentatie van</span>' + TOOLS.map(t => {
+                    const on = toolFilter.has(t.id);
+                    return '<button type="button" class="toolbtn' + (on ? ' on' : '') + '" data-tool="' + esc(t.id) + '"' +
+                        (on ? ' style="background:' + esc(t.kleur) + ';border-color:' + esc(t.kleur) + '"' : '') + '>' +
+                        '<span class="dot" style="background:' + (on ? '#fff' : esc(t.kleur)) + '"></span>' +
+                        esc(t.kort) + ' <span class="num">' + t.docs.size + '</span></button>';
+                }).join('');
+            }
+            function renderFilterBar() {
+                const bar = $('filterbar');
+                if (!filters.size && !toolFilter.size) { bar.classList.remove('on'); return; }
+                bar.classList.add('on');
+                const chips = [];
+                for (const [col, vals] of filters)
+                    for (const v of vals)
+                        chips.push('<span class="chip" data-col="' + col + '" data-val="' + esc(v) + '" title="Filter verwijderen">' +
+                            '<span class="k">' + esc(DATA.headers[col]) + ':</span> ' + esc(v) + ' <span class="x">×</span></span>');
+                TOOLS.filter(t => toolFilter.has(t.id)).forEach(t =>
+                    chips.push('<span class="chip" data-tool="' + esc(t.id) + '" title="Filter verwijderen">' +
+                        '<span class="k">Tool:</span> ' + esc(t.kort) + ' <span class="x">×</span></span>'));
+                $('chips').innerHTML = chips.join(' ');
+            }
 
-		function render() {
-			const q = $('search').value.trim().toLowerCase();
-			renderToolPicker();
-			renderFilterBar();
-			document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.view === view));
-			const beheer = view === 'controle';
-			$('toolpicker').style.display = beheer ? 'none' : '';
-			$('search').style.display = beheer ? 'none' : '';
-			if (beheer) renderControle();
-			else if (view === 'tools') renderTools(q);
-			else renderLijst(q);
-		}
+            function render() {
+                const q = $('search').value.trim().toLowerCase();
+                renderToolPicker();
+                renderFilterBar();
+                document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.view === view));
+                const beheer = view === 'controle';
+                $('toolpicker').style.display = beheer ? 'none' : '';
+                $('search').style.display = beheer ? 'none' : '';
+                if (beheer) renderControle();
+                else if (view === 'tools') renderTools(q);
+                else renderLijst(q);
+            }
 
-		// ───────────────────────── interactie ─────────────────────────
-		function toggleTag(col, val) {
-			const v = val.toLowerCase();
-			if (!filters.has(col)) filters.set(col, new Set());
-			const set = filters.get(col);
-			if (set.has(v)) { set.delete(v); if (!set.size) filters.delete(col); } else set.add(v);
-			render();
-		}
-		function toggleTool(id) {
-			if (toolFilter.has(id)) toolFilter.delete(id); else toolFilter.add(id);
-			render();
-		}
-		document.addEventListener('click', e => {
-			const tab = e.target.closest('.tab');
-			if (tab) { view = tab.dataset.view; render(); return; }
-			const badge = e.target.closest('.docbadge');
-			if (badge) {
-				const row = badge.dataset.row, tool = badge.dataset.tool;
-				openRows.get(row) === tool ? openRows.delete(row) : openRows.set(row, tool);
-				render(); return;
-			}
-			const tag = e.target.closest('.tag');
-			if (tag) { toggleTag(+tag.dataset.col, tag.dataset.val); return; }
-			const tb = e.target.closest('.toolbtn');
-			if (tb) { toggleTool(tb.dataset.tool); return; }
-			const chip = e.target.closest('.chip');
-			if (chip) {
-				if (chip.dataset.tool) toggleTool(chip.dataset.tool);
-				else toggleTag(+chip.dataset.col, chip.dataset.val);
-			}
-		});
-		$('resetFilters').addEventListener('click', () => { filters.clear(); toolFilter.clear(); render(); });
-		$('search').addEventListener('input', render);
+            // ───────────────────────── interactie ─────────────────────────
+            function toggleTag(col, val) {
+                const v = val.toLowerCase();
+                if (!filters.has(col)) filters.set(col, new Set());
+                const set = filters.get(col);
+                if (set.has(v)) { set.delete(v); if (!set.size) filters.delete(col); } else set.add(v);
+                render();
+            }
+            function toggleTool(id) {
+                if (toolFilter.has(id)) toolFilter.delete(id); else toolFilter.add(id);
+                render();
+            }
+            document.addEventListener('click', e => {
+                const tab = e.target.closest('.tab');
+                if (tab) { view = tab.dataset.view; render(); return; }
+                const badge = e.target.closest('.docbadge');
+                if (badge) {
+                    const row = badge.dataset.row, tool = badge.dataset.tool;
+                    openRows.get(row) === tool ? openRows.delete(row) : openRows.set(row, tool);
+                    render(); return;
+                }
+                const tag = e.target.closest('.tag');
+                if (tag) { toggleTag(+tag.dataset.col, tag.dataset.val); return; }
+                const tb = e.target.closest('.toolbtn');
+                if (tb) { toggleTool(tb.dataset.tool); return; }
+                const chip = e.target.closest('.chip');
+                if (chip) {
+                    if (chip.dataset.tool) toggleTool(chip.dataset.tool);
+                    else toggleTag(+chip.dataset.col, chip.dataset.val);
+                }
+            });
+            $('resetFilters').addEventListener('click', () => { filters.clear(); toolFilter.clear(); render(); });
+            $('search').addEventListener('input', render);
 
-		// ───────────────────────── laden ─────────────────────────
-		async function laadLeveranciers() {
-			const idx = await fetch(GH.raw(PAD.leveranciers + '/index.json'))
-				.then(r => { if (!r.ok) throw new Error('index.json: HTTP ' + r.status); return r.json(); });
-			const lijst = idx.leveranciers || [];
+            // ───────────────────────── laden ─────────────────────────
+            async function laadLeveranciers() {
+                const idx = await fetch(GH.raw(PAD.leveranciers + '/index.json'))
+                    .then(r => { if (!r.ok) throw new Error('index.json: HTTP ' + r.status); return r.json(); });
+                const lijst = idx.leveranciers || [];
 
-			const uitkomsten = await Promise.allSettled(lijst.map(async l => {
-				const pad = PAD.leveranciers + '/' + l.bestand;
-				const md = await fetch(GH.raw(pad))
-					.then(r => { if (!r.ok) throw new Error(l.bestand + ': HTTP ' + r.status); return r.text(); });
-				const t = parseLeverancier(md, l.id || l.bestand.replace(/\.md$/, ''));
-				t.bestand = l.bestand;
-				t.pad = pad;
-				t.bron = GH.blob(pad);
-				// versie en datum komen uit de git-historie; frontmatter dient als terugval
-				const c = await laatsteCommit(pad);
-				if (c) {
-					t.commit = c;
-					t.versie = c.kort;
-					t.bijgewerkt = c.datum;
-					t.bijgewerktIso = c.iso;
-				}
-				return t;
-			}));
+                const uitkomsten = await Promise.allSettled(lijst.map(async l => {
+                    const pad = PAD.leveranciers + '/' + l.bestand;
+                    const md = await fetch(GH.raw(pad))
+                        .then(r => { if (!r.ok) throw new Error(l.bestand + ': HTTP ' + r.status); return r.text(); });
+                    const t = parseLeverancier(md, l.id || l.bestand.replace(/\.md$/, ''));
+                    t.bestand = l.bestand;
+                    t.pad = pad;
+                    t.bron = GH.blob(pad);
+                    // versie en datum komen uit de git-historie; frontmatter dient als terugval
+                    const c = await laatsteCommit(pad);
+                    if (c) {
+                        t.commit = c;
+                        t.versie = c.kort;
+                        t.bijgewerkt = c.datum;
+                        t.bijgewerktIso = c.iso;
+                    }
+                    return t;
+                }));
 
-			LAADFOUTEN = uitkomsten.filter(u => u.status === 'rejected').map(u => String(u.reason.message || u.reason));
-			const tools = uitkomsten.filter(u => u.status === 'fulfilled').map(u => u.value);
-			if (!tools.length && lijst.length) throw new Error('geen enkel leveranciersbestand kon worden geladen');
-			return tools;
-		}
+                LAADFOUTEN = uitkomsten.filter(u => u.status === 'rejected').map(u => String(u.reason.message || u.reason));
+                const tools = uitkomsten.filter(u => u.status === 'fulfilled').map(u => u.value);
+                if (!tools.length && lijst.length) throw new Error('geen enkel leveranciersbestand kon worden geladen');
+                return tools;
+            }
 
-		fetch(GH.raw(PAD.hoofdlijst))
-			.then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-			.then(async md => {
-				DATA = parseHoofdlijst(md);
-				tagCols = DATA.headers.map((h, i) => TAG_COLS.some(re => re.test(h)) ? i : -1).filter(i => i !== -1);
-				HOOFDLIJST_COMMIT = await laatsteCommit(PAD.hoofdlijst);
-				try { TOOLS = await laadLeveranciers(); }
-				catch (e) { TOOLS = []; LAADFOUTEN = [String(e.message || e)]; }
-				$('status').remove();
-				render();
-			})
-			.catch(err => {
-				const s = $('status');
-				s.className = 'error';
-				s.innerHTML = 'Kon de hoofdlijst niet laden van GitHub (' + esc(String(err.message || err)) +
-					').<br>Controleer je internetverbinding en herlaad de pagina.';
-			});
-	</script>
+            fetch(GH.raw(PAD.hoofdlijst))
+                .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+                .then(async md => {
+                    DATA = parseHoofdlijst(md);
+                    tagCols = DATA.headers.map((h, i) => TAG_COLS.some(re => re.test(h)) ? i : -1).filter(i => i !== -1);
+                    HOOFDLIJST_COMMIT = await laatsteCommit(PAD.hoofdlijst);
+                    try { TOOLS = await laadLeveranciers(); }
+                    catch (e) { TOOLS = []; LAADFOUTEN = [String(e.message || e)]; }
+                    $('status').remove();
+                    render();
+                })
+                .catch(err => {
+                    const s = $('status');
+                    s.className = 'error';
+                    s.innerHTML = 'Kon de hoofdlijst niet laden van GitHub (' + esc(String(err.message || err)) +
+                        ').<br>Controleer je internetverbinding en herlaad de pagina.';
+                });
+    </script>
 </NoLayout>
