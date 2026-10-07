@@ -1,5 +1,5 @@
 ---
-const { href, ...other } = Astro.props;
+const { href, type, ...other } = Astro.props;
 ---
 <style>
     .button {
@@ -29,4 +29,4 @@ const { href, ...other } = Astro.props;
         }
     }
 </style>
-<a href={href} class="button primary" role="button" {...other}><slot /></a>
+<a href={href} class={"button " + type} role="button" {...other}><slot /></a>

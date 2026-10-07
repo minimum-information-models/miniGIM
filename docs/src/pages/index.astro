@@ -150,7 +150,7 @@ import Container from "../components/Container.astro";
             }
         }
 
-        @media only screen and (max-width: 800px) {
+        @media only screen and (max-width: 966px) {
             li {
                 padding: 0.3rem 0.4rem;
 
@@ -167,14 +167,13 @@ import Container from "../components/Container.astro";
         <Container>
             <div class="text">
                 <h1>MiniGIM</h1>
-                <h2>Met MiniGIM &mdash; <i>GebiedsInformatieModel</i> &mdash; worden gebiedsontwikkelingen
+                <h2>Met MiniGIM &mdash; <i>GebiedsInformatieMethodiek</i> &mdash; worden gebiedsontwikkelingen
                     <strong>transparanter</strong>, <strong>voorspelbaarder</strong>, en daardoor ook
                     <strong>sneller</strong> gerealiseerd – met een betere <strong>integrale kwaliteit</strong>
                     &eacute;n gerichte <strong>sturing op financi&euml;le haalbaarheid</strong>.</h2>
                 <blockquote>
                     <span>
-                        Geen dikke rapporten, eindeloze ICT-trajecten en bijbehorende vertraging, maar praktisch
-                        toepasbare tools en werkwijzen die zich al hebben bewezen.
+                        Risico's en kansen vroeg op tafel &mdash; niet pas als het ontwerp al vaststaat
                     </span>
                 </blockquote>
             </div>
@@ -205,20 +204,21 @@ import Container from "../components/Container.astro";
     <section>
         <Container>
             <h3>Wat is MiniGIM?</h3>
-            <p>MiniGIM is een initiatief van onder andere BPD, Blauwhoed, VORM, MRP, COD en Kavelvastgoed en bestaat
-                uit twee kernonderdelen:</p>
+            <p>MiniGIM is gestart als initiatief van BPD, Blauwhoed, VORM, MRP, COD en Kavelvastgoed, en is sindsdien
+                doorontwikkeld door NEPROM, samen met gemeenten en het DMI-ecosysteem. Versie 1.0 bestaat uit twee
+                kernonderdelen, aangevuld met een beheerdocument, een voorbeeldmodel en hulpmiddelen voor
+                softwareleveranciers:</p>
             <ol>
                 <li>
-                    <h4>Omgevingsanalyse Lijst</h4>
-                    <p>Een complete checklist met omgevingsanalyses, risico’s en inventarisaties &mdash; ontwikkeld op
-                        basis van input van grote gebiedsontwikkelaars. Met deze Lijst voorkom je dat belangrijke
+                    <h4>Omgevingsanalyselijst</h4>
+                    <p>Een checklist met 83 onderdelen in 13 modules, van bodem en water tot milieu, veiligheid,
+                        mobiliteit, participatie en grondexploitatie. Met deze lijst voorkom je dat belangrijke
                         elementen ontbreken of onvoldoende worden uitgewerkt.</p>
                 </li>
                 <li>
-                    <h4>Informatie Leverings Specificatie (ILS)</h4>
-                    <p>Dit document beschrijft de minimale dataset die nodig is om een grondexploitatie (GREX)
-                        onveranderd en inhoudelijk onderbouwd te realiseren &mdash; zowel financieel als
-                        inhoudelijk.</p>
+                    <h4>Informatieleveringsspecificatie (ILS)</h4>
+                    <p>Legt vast welke gegevens een 3D-ontwerpmodel minimaal moet bevatten om de grondexploitatie
+                        (GREX) automatisch te kunnen doorrekenen.</p>
                 </li>
             </ol>
         </Container>
@@ -228,13 +228,18 @@ import Container from "../components/Container.astro";
             <div class="entries">
                 <div class="entry">
                     <p>
-                        <LinkButton href="/downloads/MiniGIM-omgevingsanalyse-lijst-v0.91.xlsx" download>
-                            Download de omgevingsanalyse lijst (v0.91)
+                        <LinkButton href="https://minigim.nl/omgevingsanalyselijst/" type="primary" target="_blank">
+                            Bekijk de interactieve omgevingsanalyselijst
                         </LinkButton>
                     </p>
                     <p>
-                        <LinkButton href="/downloads/MiniGIM-ILS-v0.8.xlsx" download>
-                            Download de ILS Excel (v0.8)
+                        <LinkButton href="https://github.com/minimum-information-models/miniGIM/blob/main/Omgevingsanalyselijst/omgevingsanalyselijst.md" target="_blank">
+                            Bekijk de omgevingsanalyselijst op GitHub
+                        </LinkButton>
+                    </p>
+                    <p>
+                        <LinkButton href="https://github.com/minimum-information-models/miniGIM/blob/main/ILS-IDS/miniGIM_IDS_documentation.docx" target="_blank">
+                            Bekijk de ILS op GitHub
                         </LinkButton>
                     </p>
                     <p class="muted">Komende jaren zullen deze documenten verder ontwikkeld worden, in samenwerking met
@@ -249,15 +254,14 @@ import Container from "../components/Container.astro";
     <section>
         <Container>
             <h3>Hoe is MiniGIM te gebruiken?</h3>
-            <p>Door gebruik te maken van de omgevingsanalyse lijst als checklist kan men vroegtijdig veel kansen en
-                risico's in kaart brengen. Weet men waar de benodigde data kan vinden, en in welk standaard formaat dit
-                dient gedeeld te worden met andere stakeholders. Door op een gestructureerde wijze deze data, kansen, en
-                risico's te verzamelen en beschikbaar te maken, kan een betere gebiedsindeling tot stand komen met meer
-                betrokken stakeholders.</p>
-            <p>Tegelijkertijd kan men middels een GREX, snel een gebiedsindeling vormgeven, en deze samen met
-                stakeholders
-                evalueren. MiniGIM geeft de ruimte om afhankelijk van de fase en informatiebehoefte, de gebiedsindeling
-                uit te werken in globale lijnen, of uit te werken tot in detail.</p>
+            <p>Door de omgevingsanalyselijst als checklist te gebruiken, breng je vroegtijdig kansen en risico's in
+                kaart. Ook wordt duidelijk waar de benodigde data te vinden is, en in welk standaard formaat die
+                gedeeld wordt met andere stakeholders. Door dit gestructureerd te verzamelen en beschikbaar te maken,
+                ontstaat een beter onderbouwd beeld van het gebied, met meer betrokken stakeholders.</p>
+            <p>Op basis van 3D-ontwerpmodellen volgens de ILS kan de grondexploitatie per variant worden doorgerekend
+                en samen met stakeholders worden beoordeeld. MiniGIM geeft de ruimte om afhankelijk van de fase en
+                informatiebehoefte, de gebiedsindeling uit te werken in globale lijnen, of uit te werken tot in
+                detail.</p>
         </Container>
         <ul class="carousel">
             <li class="item">
@@ -307,21 +311,18 @@ import Container from "../components/Container.astro";
     <section>
         <Container>
             <h3>Waarom is MiniGIM belangrijk?</h3>
-            <p>Omdat de praktijk van gebiedsontwikkeling echt anders kan. Sneller. Slimmer. Transparanter. Met
-                minder dubbel werk. En meer grip op keuzes in de planvorming. En vooral: vanuit een betere
-                samenwerking tussen alle stakeholders.</p>
-            <p>Veel gebiedsontwikkelingen lopen nu nog te vaak vertraging op doordat essentiële analyses
-                ontbreken of onvolledig zijn. Dat leidt tot faalkosten en ineffectiviteit. En dat kan dus
-                anders. Moet anders. Met MiniGIM. </p>
+            <p>Bij gebiedsontwikkeling is veel informatie beschikbaar, maar die is verspreid over bronnen, komt op
+                verschillende momenten beschikbaar en wordt niet altijd op dezelfde manier gebruikt. Belangrijke
+                aandachtspunten komen daardoor soms laat of niet in beeld. MiniGIM brengt daar structuur in.</p>
             <br/>
             <p>Met MiniGIM:</p>
             <ul>
-                <li>Voer je een transparante, datagedreven dialoog met gemeenten en andere stakeholders</li>
+                <li>Voer je een transparante, datagedreven dialoog met gemeenten en andere stakeholders.</li>
                 <li>Werk je samen vanuit &eacute;&eacute;n betrouwbare informatiebron.</li>
-                <li>Verlaag je faalkosten &eacute;n verbeter je de kwaliteit van besluitvorming.</li>
+                <li>Breng je risico's en aandachtspunten in beeld v&oacute;&oacute;rdat programma of ontwerp vaststaat.</li>
                 <li>Stuur je proactief, ook op financi&euml;le haalbaarheid.</li>
-                <li>Optimaliseer je ontwikkeltijd via slimme planning</li>
-                <li>Sluit je aan op open standaarden en landelijke systemen zoals DMI, DSO, BGT/BRO.</li>
+                <li>Gebruik je bestaande openbare bronnen, zoals PDOK, CBS en de BRO.</li>
+                <li>Sluit je aan op open standaarden en landelijke systemen zoals DSO en BGT, en op het DMI-ecosysteem.</li>
             </ul>
             <br/>
             <ul class="slides">
@@ -346,16 +347,27 @@ import Container from "../components/Container.astro";
         <Container>
             <h3>Hoe verloopt het proces met MiniGIM?</h3>
             <ol class="steps">
-                <li>Stel een Programma van Eisen (PvE) op met heldere en toetsbare doelen.</li>
+                <li>Breng met de omgevingsanalyselijst de kansen en risico's in het gebied in kaart.</li>
+                <li>Stel op basis daarvan een Programma van Eisen (PvE) op met heldere en toetsbare doelen.</li>
                 <li>Bepaal welke analyses nodig zijn, zowel n&uacute; als in de toekomst.</li>
                 <li>Plan deze analyses samen met de betrokken gemeente binnen een realistisch tijdschema.</li>
                 <li>Ontwikkel ontwerpvarianten op basis van de ILS, gebruikmakend van 3D-modellen.</li>
                 <li>Lever de modellen als IFC-bestanden (BIM of parametrisch): dit waarborgt leesbaarheid,
-                    betrouwbaarheid en naleving van gemeentelijke standaarden.
+                    betrouwbaarheid en naleving van standaarden.
                 </li>
             </ol>
             <br/>
             <ul class="steps-bar">
+                <li>
+                    <h1>Risico's & kansen</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                         class="icon icon-tabler icons-tabler-outline icon-tabler-flag">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path stroke="var(--yellow)" d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9" />
+                        <path d="M5 21v-7" />
+                    </svg>
+                </li>
                 <li>
                     <h1>Programma van Eisen</h1>
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
@@ -419,10 +431,10 @@ import Container from "../components/Container.astro";
             <div class="entries">
                 <div class="entry">
                     <h3>Intentieverklaring op Provada 2025</h3>
-                    <p>Op vastgoedbeurs <strong>Provada 2025</strong> (17-19 juni jl.) ondertekenden tal van publieke en
-                        private partijen de <strong>Intentieverklaring MiniGIM</strong>. Dit moment symboliseert de
-                        gezamenlijke inzet voor meer standaardisatie, transparantie en samenwerking— niet als een losse
-                        belofte, maar op basis van concrete afspraken.</p>
+                    <p>Op vastgoedbeurs <strong>Provada 2025</strong> (17-19 juni 2025) ondertekenden tal van publieke
+                        en private partijen de <strong>Intentieverklaring MiniGIM</strong>. Dit moment symboliseert de
+                        gezamenlijke inzet voor meer standaardisatie, transparantie en samenwerking &mdash; niet als
+                        een losse belofte, maar op basis van concrete afspraken.</p>
                     <div style="margin-top: 3rem">
                         <a href="/images/PLF_PROVADA_180625-47b.jpg" download>
                             <img src="/images/PLF_PROVADA_180625-47b.jpg" class="photo"
@@ -435,13 +447,10 @@ import Container from "../components/Container.astro";
                     </div>
                 </div>
                 <div class="entry">
-                    <h3>Deelnemers DMI-ecosysteem aan de slag met MiniGIM</h3>
-                    <p>Het DMI-ecosysteem heeft het standaard informatieprofiel van gebieden zoals onderdeel van MiniGIM
-                        <Link href="https://dmi-ecosysteem.nl/blog/use-case/minigim-versnelt-gebiedsontwikkeling-en-biedt-voorspelbaarheid/" target="_blank">
-                            enthousiast omarmd.
-                        </Link>
-                        De komende periode bereiden DMI-deelnemers waaronder de gemeenten Rotterdam, Apeldoorn, Alkmaar
-                        en Dordrecht en het ministerie van Infrastructuur en Waterstaat het gebruik van MiniGIM voor.
+                    <h3>Doe mee met de praktijktoetsen</h3>
+                    <p>Vanaf oktober 2026 wordt MiniGIM 1.0 toegepast in gebieden van de Samenwerkingsagenda
+                        Toekomstbestendige Gebiedsontwikkeling (SA TBGO). We zoeken verschillende typen gemeenten,
+                        gebiedsontwikkelingen, ontwikkelaars en softwarepakketten: klein en groot, lokaal en regionaal.
                     </p>
                     <p>Ben je actief als:</p>
                     <ul>
@@ -455,16 +464,15 @@ import Container from "../components/Container.astro";
                     <h3>Wat kun je doen?</h3>
                     <ul>
                         <li>Bekijk
-                            <Link href="https://youtu.be/a9DZPrzkZy8" target="_blank">de MiniGIM webinar.</Link>
+                            <Link href="https://youtu.be/a9DZPrzkZy8" target="_blank">de MiniGIM webinar</Link>
+                            (over een eerdere versie van MiniGIM).
                         </li>
                         <li>
-                            <Link href="mailto:vragen@minigim.nl">Reageer op de hierboven genoemde MiniGIM-componenten</Link>
-                            :
-                            geef aan welke onderdelen je kunt leveren of ondersteunen.
+                            Gemeenten en gebiedsontwikkelaars: breng een casus in voor een praktijktoets via
+                            <Link href="mailto:vragen@minigim.nl">vragen@minigim.nl</Link>. NEPROM en DMI kunnen
+                            ondersteuning bieden bij de implementatie.
                         </li>
-                        <li>Op basis van reacties organiseren we de komende tijd verschillende bijeenkomsten en sessies
-                            om het netwerk rond MiniGIM verder uit te breiden.
-                        </li>
+                        <li>Ervaringen uit de praktijktoetsen gebruiken we voor een volgende, aangescherpte versie.</li>
                     </ul>
                 </div>
             </div>
